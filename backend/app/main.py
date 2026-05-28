@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import pipeline, agents, tasks, history, chat, health, ml, report, auth
 from app.middleware import LoggingMiddleware, FileSizeMiddleware
 
-app = FastAPI(title="NEXUS API", version="3.0.0")
+app = FastAPI(title="NEXUS API", version="3.0.0", redirect_slashes=True)
 
 # CORS Middleware (First operation after app initialization)
 app.add_middleware(
@@ -28,7 +28,3 @@ app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(health.router, prefix="/api/health", tags=["health"])
 app.include_router(ml.router, prefix="/api/ml", tags=["ml"])
 app.include_router(report.router, prefix="/api/report", tags=["report"])
-
-@app.get("/health")
-async def health_check():
-    return {"status": "ok", "service": "NEXUS", "version": "3.0.0"}
