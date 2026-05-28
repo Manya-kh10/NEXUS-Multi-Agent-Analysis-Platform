@@ -8,9 +8,29 @@ app = FastAPI(title="NEXUS API", version="3.0.0")
 # Middleware
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(FileSizeMiddleware)
+
+import os
+origins = [
+    "http://localhost",
+    "http://localhost:8501",
+    "http://localhost:8000",
+    "http://127.0.0.1",
+    "http://127.0.0.1:8501",
+    "http://127.0.0.1:8000",
+    "https://nexus-multi-agent-intelligence-analysis-platform.vercel.app"
+]
+
+frontend_url = os.environ.get("FRONTEND_URL")
+if frontend_url:
+    origins.append(frontend_url)
+
+if "*" not in origins:
+    origins.append("*")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
+    allow_origin_regex="https://.*\\.vercel\\.app",
     allow_methods=["*"],
     allow_headers=["*"],
 )
