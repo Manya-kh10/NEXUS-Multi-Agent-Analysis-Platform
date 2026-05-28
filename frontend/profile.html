@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>NEXUS - Profile Management</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .purple-glow {
+      box-shadow: 0 0 15px rgba(124, 58, 237, 0.2);
+    }
+    .glass-card {
+      background: rgba(31, 30, 42, 0.4);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .neon-glow:focus-within input, 
+    .neon-glow:focus-within select, 
+    .neon-glow:focus-within textarea {
+      box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+      border-color: rgba(210, 187, 255, 0.5);
+    }
+    .primary-gradient {
+      background: linear-gradient(135deg, #7c3aed 0%, #d2bbff 100%);
+    }
+    .status-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .pulse-online {
+      animation: pulse-breathing 3s ease-in-out infinite;
+    }
+    @keyframes pulse-breathing {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(78, 222, 163, 0.4); }
+      50% { opacity: 0.8; transform: scale(1.05); box-shadow: 0 0 12px 4px rgba(78, 222, 163, 0.2); }
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%) skewX(-15deg); }
+      100% { transform: translateX(200%) skewX(-15deg); }
+    }
+    .shimmer-btn {
+      position: relative;
+      overflow: hidden;
+    }
+    .shimmer-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 3s infinite;
+    }
+    @keyframes fade-slide-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-entrance {
+      opacity: 0;
+      animation: fade-slide-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .avatar-img {
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .group:hover .avatar-img {
+      transform: scale(1.05) rotate(2deg);
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #12121d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #343440;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4a4455;
+    }
+  </style>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-container": "#ede0ff",
+            "error": "#ffb4ab",
+            "tertiary": "#c6c4df",
+            "surface-variant": "#343440",
+            "surface-dim": "#12121d",
+            "on-error": "#690005",
+            "on-surface": "#e3e0f1",
+            "on-secondary-container": "#00311f",
+            "on-primary-fixed-variant": "#5a00c6",
+            "tertiary-container": "#65647c",
+            "surface-tint": "#d2bbff",
+            "on-tertiary-fixed": "#1a1a2e",
+            "on-background": "#e3e0f1",
+            "on-tertiary-fixed-variant": "#45455b",
+            "primary-container": "#7c3aed",
+            "surface-container": "#1f1e2a",
+            "outline": "#958da1",
+            "tertiary-fixed-dim": "#c6c4df",
+            "primary-fixed-dim": "#d2bbff",
+            "secondary": "#4edea3",
+            "primary-fixed": "#eaddff",
+            "on-secondary-fixed": "#002113",
+            "inverse-on-surface": "#302f3b",
+            "on-error-container": "#ffdad6",
+            "on-tertiary-container": "#e5e2fe",
+            "inverse-primary": "#732ee4",
+            "on-primary": "#3f008e",
+            "primary": "#d2bbff",
+            "outline-variant": "#4a4455",
+            "surface-container-high": "#292935",
+            "surface-container-lowest": "#0d0d18",
+            "secondary-fixed-dim": "#4edea3",
+            "on-surface-variant": "#ccc3d8",
+            "on-secondary-fixed-variant": "#005236",
+            "inverse-surface": "#e3e0f1",
+            "error-container": "#93000a",
+            "on-primary-fixed": "#25005a",
+            "background": "#12121d",
+            "secondary-fixed": "#6ffbbe",
+            "on-tertiary": "#2f2e43",
+            "secondary-container": "#00a572",
+            "surface": "#12121d",
+            "tertiary-fixed": "#e2e0fc",
+            "surface-container-highest": "#343440",
+            "surface-bright": "#383845",
+            "on-secondary": "#003824",
+            "surface-container-low": "#1b1a26"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "lg": "24px",
+            "sm": "8px",
+            "gutter": "20px",
+            "md": "16px",
+            "base": "4px",
+            "xs": "4px",
+            "xl": "32px",
+            "margin-mobile": "16px",
+            "margin-desktop": "40px"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "data-mono": ["JetBrains Mono"],
+            "body-lg": ["Inter"],
+            "headline-lg": ["Inter"],
+            "display-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "label-caps": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+            "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+          }
+        },
+      },
+    }
+  </script>
+  <!-- Global config and shared common script -->
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script>
+    // Access Guard - only signed-in users allowed
+    const secureToken = localStorage.getItem("nexus_jwt_token");
+    if (!secureToken) {
+      window.location.href = "/";
+    }
+  </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden select-none">
+  
+  <!-- Success Toast Notification -->
+  <div class="fixed top-20 right-8 z-[100] transform translate-x-[150%] transition-transform duration-500 ease-out" id="save-toast">
+    <div class="glass-card flex items-center gap-md p-md rounded-xl border-l-4 border-l-secondary shadow-2xl">
+      <span class="material-symbols-outlined text-secondary">check_circle</span>
+      <div>
+        <p class="text-body-sm font-bold text-on-surface">Profile Synchronized</p>
+        <p class="text-[12px] text-on-surface-variant">Nexus core updated successfully.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDE NAVBAR -->
+  <aside class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-low border-r border-outline-variant/10 flex flex-col py-xl z-50 overflow-y-auto">
+    <div class="px-md mb-xl">
+      <div class="flex items-center gap-md">
+        <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center purple-glow">
+          <span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">terminal</span>
+        </div>
+        <div>
+          <h1 class="text-headline-md font-headline-md font-black text-primary tracking-widest leading-none">NEXUS</h1>
+          <p class="text-label-caps font-label-caps text-on-surface-variant mt-1">Computational Intelligence</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 space-y-1">
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-200" href="/dashboard">
+        <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+        <span class="text-body-md font-body-md">Home</span>
+      </a>
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-200" href="/upload">
+        <span class="material-symbols-outlined" data-icon="upload_file">upload_file</span>
+        <span class="text-body-md font-body-md">Upload &amp; Clean</span>
+      </a>
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-200" href="/analysis">
+        <span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+        <span class="text-body-md font-body-md">Agent Analysis</span>
+      </a>
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-200" href="/chat">
+        <span class="material-symbols-outlined" data-icon="forum">forum</span>
+        <span class="text-body-md font-body-md">Chat</span>
+      </a>
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-200" href="/history">
+        <span class="material-symbols-outlined" data-icon="history">history</span>
+        <span class="text-body-md font-body-md">History</span>
+      </a>
+    </nav>
+    <div class="px-md mt-xl">
+      <button class="w-full bg-primary-container text-on-primary-container py-md rounded-xl font-bold text-body-md flex items-center justify-center gap-sm active:scale-95 duration-200 purple-glow relative overflow-hidden" onclick="window.location.href='/analysis'">
+        <span class="icon-container flex items-center gap-sm">
+          <span class="material-symbols-outlined text-[20px]">add_circle</span>
+          <span>Run New Analysis</span>
+        </span>
+      </button>
+    </div>
+    <div class="mt-auto border-t border-outline-variant/10 pt-lg">
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface transition-all duration-200" href="/support">
+        <span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+        <span class="text-body-md font-body-md">Support</span>
+      </a>
+      <div class="mt-lg px-md flex items-center gap-md border-t border-outline-variant/10 pt-lg pb-4">
+        <div class="w-10 h-10 rounded-full bg-primary/20 text-primary border border-primary/20 flex items-center justify-center font-bold user-avatar-initials text-body-md">
+          <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+        </div>
+        <div class="overflow-hidden">
+          <p class="text-body-md font-bold truncate user-name-display"><span class="bg-outline-variant/30 rounded w-20 h-4 animate-pulse inline-block"></span></p>
+          <p class="text-label-caps text-on-surface-variant truncate user-email-display"><span class="bg-outline-variant/20 rounded w-28 h-3 animate-pulse inline-block"></span></p>
+        </div>
+      </div>
+    </div>
+  </aside>
+  
+  <!-- TOP APP BAR -->
+  <header class="fixed top-0 right-0 h-16 ml-[280px] w-[calc(100%-280px)] bg-surface-container flex justify-between items-center px-gutter z-40 border-b border-outline-variant/10">
+    <div class="flex items-center gap-lg flex-1">
+      <div class="relative w-full max-w-md">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+        <input class="w-full bg-surface-container-highest border-none rounded-lg pl-10 pr-4 py-2 text-body-md focus:ring-1 focus:ring-primary transition-all text-on-surface outline-none" placeholder="Search analytics, agents, or datasets..." type="text"/>
+      </div>
+    </div>
+    <div class="flex items-center gap-md">
+      <div class="flex items-center gap-sm mr-4 border-r border-outline-variant/10 pr-md cursor-pointer hover:opacity-85" onclick="window.location.href='/profile'">
+        <div class="flex flex-col items-end mr-sm">
+          <span class="text-body-sm font-bold text-on-surface leading-none user-name-display"><span class="bg-outline-variant/30 rounded w-20 h-3.5 animate-pulse inline-block"></span></span>
+          <span class="text-[10px] text-primary font-bold uppercase tracking-tighter mt-1 user-role-display"><span class="bg-outline-variant/20 rounded w-12 h-3 animate-pulse inline-block"></span></span>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-body-md purple-glow user-avatar-initials">
+          <span class="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-sm">
+        <button class="flex items-center gap-xs px-3 py-1.5 rounded-lg border border-outline-variant/20 hover:bg-error/10 hover:text-error hover:border-error/30 transition-all text-body-sm font-medium logout-btn">
+          <span class="material-symbols-outlined text-[18px]">logout</span>
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Main Canvas -->
+  <main class="ml-[280px] mt-16 p-margin-desktop overflow-y-auto h-[calc(100vh-64px)] pb-32">
+    <!-- Header Section -->
+    <section class="flex flex-col gap-xs animate-entrance mb-xl">
+      <h2 class="text-headline-lg font-headline-lg text-on-surface">Profile Management</h2>
+      <p class="text-body-lg text-on-surface-variant opacity-80">Manage your personal information and workspace identity</p>
+    </section>
+    
+    <!-- Main Profile Card -->
+    <section class="glass-card rounded-2xl p-xl flex flex-col md:flex-row gap-xl animate-entrance delay-1 mb-xl">
+      <!-- Avatar Column -->
+      <div class="flex flex-col items-center gap-lg w-full md:w-1/3">
+        <div class="relative group cursor-pointer" onclick="triggerPhotoUpload()">
+          <div class="absolute -inset-1 bg-gradient-to-tr from-primary to-secondary rounded-full blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
+          <div class="relative w-48 h-48 rounded-full border-2 border-primary/30 overflow-hidden flex items-center justify-center bg-primary/10">
+            <!-- Large profile avatar -->
+            <div id="large-avatar-preview" class="w-full h-full flex items-center justify-center text-headline-lg font-black text-primary user-avatar-initials">A</div>
+          </div>
+          <div class="absolute bottom-4 right-4 bg-secondary text-on-secondary text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-secondary/20 pulse-online">ONLINE</div>
+        </div>
+        <div class="w-full space-y-md">
+          <button class="w-full flex items-center justify-center gap-sm bg-surface-container-high border border-outline-variant/30 py-2.5 rounded-xl hover:bg-surface-container-highest transition-all" onclick="triggerPhotoUpload()">
+            <span class="material-symbols-outlined text-[20px]">photo_camera</span>
+            <span class="text-label-caps">Edit Photo</span>
+          </button>
+          <div class="border-2 border-dashed border-primary/20 rounded-xl p-md text-center bg-primary/5 hover:border-primary/40 transition-colors cursor-pointer group relative" id="drop-zone">
+            <input type="file" id="profile-photo-input" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" onchange="handlePhotoUpload(event)" />
+            <span class="material-symbols-outlined text-primary/60 group-hover:scale-110 transition-transform mb-sm block">cloud_upload</span>
+            <p class="text-body-sm text-on-surface-variant">Drag and drop new avatar here</p>
+          </div>
+        </div>
+      </div>
+      <!-- Form Column -->
+      <div class="w-full md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-lg">
+        <div class="flex flex-col gap-sm neon-glow">
+          <label class="text-label-caps text-on-surface-variant ml-1">Full Name</label>
+          <input id="profile-fullname" class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-lg py-3 focus:outline-none focus:ring-0 transition-all text-on-surface" type="text" placeholder="Jameson Archer"/>
+        </div>
+        <div class="flex flex-col gap-sm neon-glow">
+          <label class="text-label-caps text-on-surface-variant ml-1">Username</label>
+          <input id="profile-username" class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-lg py-3 focus:outline-none focus:ring-0 transition-all text-on-surface font-data-mono" type="text" placeholder="j.archer_core"/>
+        </div>
+        <div class="flex flex-col gap-sm neon-glow">
+          <label class="text-label-caps text-on-surface-variant ml-1">Email Address</label>
+          <input id="profile-email" class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-lg py-3 focus:outline-none focus:ring-0 transition-all text-on-surface" type="email" placeholder="archer.j@nexus-intel.com"/>
+        </div>
+        <div class="flex flex-col gap-sm neon-glow">
+          <label class="text-label-caps text-on-surface-variant ml-1">Phone</label>
+          <input id="profile-phone" class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-lg py-3 focus:outline-none focus:ring-0 transition-all text-on-surface" type="text" placeholder="+1 (555) 092-4421"/>
+        </div>
+        <div class="flex flex-col gap-sm neon-glow">
+          <label class="text-label-caps text-on-surface-variant ml-1">Organization</label>
+          <input id="profile-organization" class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-lg py-3 focus:outline-none focus:ring-0 transition-all text-on-surface" type="text" placeholder="Global Security Command"/>
+        </div>
+        <div class="flex flex-col gap-sm neon-glow">
+          <label class="text-label-caps text-on-surface-variant ml-1">Role</label>
+          <select id="profile-role" class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-lg py-3 focus:outline-none focus:ring-0 transition-all text-on-surface appearance-none focus:bg-surface-container-lowest text-left block w-full">
+            <option value="Operative">OPERATIVE</option>
+            <option value="Admin">ADMIN</option>
+            <option value="System Architect">SYSTEM ARCHITECT</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-sm neon-glow md:col-span-2">
+          <label class="text-label-caps text-on-surface-variant ml-1">Location</label>
+          <input id="profile-location" class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-lg py-3 focus:outline-none focus:ring-0 transition-all text-on-surface" type="text" placeholder="San Francisco, Sector-7, Hub-Alpha"/>
+        </div>
+        <div class="flex flex-col gap-sm neon-glow md:col-span-2">
+          <label class="text-label-caps text-on-surface-variant ml-1">Bio</label>
+          <textarea id="profile-bio" class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-lg py-3 focus:outline-none focus:ring-0 transition-all text-on-surface resize-none" rows="4" placeholder="Senior System Administrator specializing in multi-agent orchestration..."></textarea>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Grid for Preferences & Security -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-xl max-w-6xl mx-auto">
+      <!-- Preferences -->
+      <section class="glass-card rounded-2xl p-xl space-y-lg animate-entrance delay-2">
+        <div class="flex items-center gap-md border-b border-outline-variant/20 pb-md">
+          <span class="material-symbols-outlined text-primary">tune</span>
+          <h3 class="text-headline-md font-bold text-[18px]">Account Preferences</h3>
+        </div>
+        <div class="space-y-xl">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-body-md font-bold">Interface Theme</p>
+              <p class="text-body-sm text-on-surface-variant">Switch between operational modes</p>
+            </div>
+            <select class="bg-surface-container-high border-none rounded-lg px-md py-2 text-body-sm text-primary font-bold focus:ring-0">
+              <option>Midnight (Dark)</option>
+              <option>High-Contrast</option>
+              <option>Terminal Mono</option>
+            </select>
+          </div>
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-body-md font-bold">Workspace Visibility</p>
+              <p class="text-body-sm text-on-surface-variant">Display active analysis projects</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input checked="" class="sr-only peer" type="checkbox"/>
+              <div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary-container after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+            </label>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Security -->
+      <section class="glass-card rounded-2xl p-xl space-y-lg animate-entrance delay-3">
+        <div class="flex items-center gap-md border-b border-outline-variant/20 pb-md">
+          <span class="material-symbols-outlined text-primary">security</span>
+          <h3 class="text-headline-md font-bold text-[18px]">Security Controls</h3>
+        </div>
+        <div class="space-y-md">
+          <button class="w-full flex items-center justify-between p-md bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/10 rounded-xl transition-all group" onclick="window.location.href='/change-password'">
+            <div class="flex items-center gap-md">
+              <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">lock_reset</span>
+              <span class="text-body-md font-medium">Change Security Password</span>
+            </div>
+            <span class="material-symbols-outlined text-outline">chevron_right</span>
+          </button>
+        </div>
+      </section>
+    </div>
+    
+    <!-- Action Footer -->
+    <footer class="fixed bottom-0 right-0 left-[280px] h-20 bg-surface-container-lowest/80 backdrop-blur-md border-t border-outline-variant/20 flex items-center justify-end px-margin-desktop gap-lg z-50">
+      <button class="px-xl py-2.5 rounded-xl text-on-surface-variant font-bold hover:text-on-surface hover:bg-surface-container-high transition-all" onclick="window.location.href='/dashboard'">
+        Cancel
+      </button>
+      <button class="primary-gradient shimmer-btn px-xl py-2.5 rounded-xl text-on-primary font-black shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] hover:scale-[1.02] transition-all active:scale-[0.98]" id="save-btn" onclick="saveProfileChanges()">
+        Save Profile Changes
+      </button>
+    </footer>
+  </main>
+  
+  <script>
+    // Micro-interactions and atmospheric effects
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+      el.addEventListener('focus', () => {
+        el.parentElement.style.transition = 'all 0.3s ease';
+      });
+    });
+
+    // Radial hover effect for cards
+    document.querySelectorAll('.glass-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+        card.style.background = `radial-gradient(800px circle at ${x}px ${y}px, rgba(210, 187, 255, 0.08), transparent 40%), rgba(26, 26, 46, 0.6)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.background = 'rgba(26, 26, 46, 0.6)';
+      });
+    });
+
+    // Populate profile inputs
+    document.addEventListener("DOMContentLoaded", () => {
+      const storedProfile = localStorage.getItem("nexus_profile");
+      const storedUser = localStorage.getItem("nexus_user");
+      
+      let user = {};
+      if (storedUser) {
+        try {
+          user = JSON.parse(storedUser);
+        } catch (e) {}
+      }
+
+      let profile = {};
+      if (storedProfile) {
+        try {
+          profile = JSON.parse(storedProfile);
+        } catch (e) {}
+      }
+
+      // Fill in inputs with stored profile values or user session defaults
+      document.getElementById("profile-fullname").value = profile.fullName || user.username || "Jameson Archer";
+      document.getElementById("profile-username").value = profile.username || user.username || "j.archer_core";
+      document.getElementById("profile-email").value = profile.email || user.email || "archer.j@nexus-intel.com";
+      document.getElementById("profile-phone").value = profile.phone || "+1 (555) 092-4421";
+      document.getElementById("profile-organization").value = profile.organization || "Global Security Command";
+      document.getElementById("profile-role").value = profile.role || (user.is_admin ? "Admin" : "Operative");
+      document.getElementById("profile-location").value = profile.location || "San Francisco, Sector-7, Hub-Alpha";
+      document.getElementById("profile-bio").value = profile.bio || "Senior System Administrator specializing in multi-agent orchestration and large-scale data cleansing.";
+
+      // Load avatar preview
+      const customAvatar = localStorage.getItem("nexus_avatar");
+      if (customAvatar) {
+        const preview = document.getElementById("large-avatar-preview");
+        preview.innerHTML = `<img src="${customAvatar}" class="w-full h-full rounded-full object-cover avatar-img" />`;
+        preview.classList.remove("bg-primary/20", "bg-primary", "text-primary", "text-on-primary");
+      }
+    });
+
+    function triggerPhotoUpload() {
+      document.getElementById("profile-photo-input").click();
+    }
+
+    // Photo input selection and drag-and-drop encoder
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      processPhotoFile(file);
+    }
+
+    // Drag and drop photo zone
+    const dropZone = document.getElementById("drop-zone");
+    dropZone.addEventListener("dragover", (e) => e.preventDefault());
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) {
+        processPhotoFile(file);
+      }
+    });
+
+    function processPhotoFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Src = e.target.result;
+        
+        // Save avatar locally
+        localStorage.setItem("nexus_avatar", base64Src);
+        
+        // Update all avatar instances dynamically in the DOM
+        const preview = document.getElementById("large-avatar-preview");
+        preview.innerHTML = `<img src="${base64Src}" class="w-full h-full rounded-full object-cover avatar-img" />`;
+        preview.classList.remove("bg-primary/20", "bg-primary", "text-primary", "text-on-primary");
+
+        const initialsElements = document.querySelectorAll(".user-avatar-initials");
+        initialElements.forEach(el => {
+          el.innerHTML = `<img src="${base64Src}" class="w-full h-full rounded-full object-cover" />`;
+          el.classList.remove("bg-primary/20", "bg-primary", "text-primary", "text-on-primary", "border-primary/20");
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Save profile logic
+    function saveProfileChanges() {
+      const fullName = document.getElementById("profile-fullname").value.trim();
+      const username = document.getElementById("profile-username").value.trim();
+      const email = document.getElementById("profile-email").value.trim();
+      const phone = document.getElementById("profile-phone").value.trim();
+      const organization = document.getElementById("profile-organization").value.trim();
+      const role = document.getElementById("profile-role").value;
+      const location = document.getElementById("profile-location").value.trim();
+      const bio = document.getElementById("profile-bio").value.trim();
+
+      const profileData = {
+        fullName,
+        username,
+        email,
+        phone,
+        organization,
+        role,
+        location,
+        bio
+      };
+
+      // Save profile context
+      localStorage.setItem("nexus_profile", JSON.stringify(profileData));
+
+      // Synchronize back to session User model so headers, emails, and usernames match globally
+      const storedUser = localStorage.getItem("nexus_user");
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          user.username = fullName;
+          user.email = email;
+          user.is_admin = (role === "Admin" || role === "System Architect");
+          localStorage.setItem("nexus_user", JSON.stringify(user));
+        } catch (e) {}
+      }
+
+      // Update text fields across screen instantly
+      document.querySelectorAll(".user-name-display").forEach(el => el.textContent = fullName);
+      document.querySelectorAll(".user-email-display").forEach(el => el.textContent = email);
+      document.querySelectorAll(".user-role-display").forEach(el => el.textContent = role);
+
+      // Trigger premium success toast
+      const toast = document.getElementById('save-toast');
+      toast.style.transform = 'translateX(0)';
+      
+      setTimeout(() => {
+        toast.style.transform = 'translateX(150%)';
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

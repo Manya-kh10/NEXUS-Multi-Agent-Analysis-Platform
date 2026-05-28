@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>NEXUS - Chat with Agent</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .purple-glow {
+      box-shadow: 0 0 15px rgba(124, 58, 237, 0.2);
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #12121d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #343440;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4a4455;
+    }
+  </style>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-container": "#ede0ff",
+            "error": "#ffb4ab",
+            "tertiary": "#c6c4df",
+            "surface-variant": "#343440",
+            "surface-dim": "#12121d",
+            "on-error": "#690005",
+            "on-surface": "#e3e0f1",
+            "on-secondary-container": "#00311f",
+            "on-primary-fixed-variant": "#5a00c6",
+            "tertiary-container": "#65647c",
+            "surface-tint": "#d2bbff",
+            "on-tertiary-fixed": "#1a1a2e",
+            "on-background": "#e3e0f1",
+            "on-tertiary-fixed-variant": "#45455b",
+            "primary-container": "#7c3aed",
+            "surface-container": "#1f1e2a",
+            "outline": "#958da1",
+            "tertiary-fixed-dim": "#c6c4df",
+            "primary-fixed-dim": "#d2bbff",
+            "secondary": "#4edea3",
+            "primary-fixed": "#eaddff",
+            "on-secondary-fixed": "#002113",
+            "inverse-on-surface": "#302f3b",
+            "on-error-container": "#ffdad6",
+            "on-tertiary-container": "#e5e2fe",
+            "inverse-primary": "#732ee4",
+            "on-primary": "#3f008e",
+            "primary": "#d2bbff",
+            "outline-variant": "#4a4455",
+            "surface-container-high": "#292935",
+            "surface-container-lowest": "#0d0d18",
+            "secondary-fixed-dim": "#4edea3",
+            "on-surface-variant": "#ccc3d8",
+            "on-secondary-fixed-variant": "#005236",
+            "inverse-surface": "#e3e0f1",
+            "error-container": "#93000a",
+            "on-primary-fixed": "#25005a",
+            "background": "#12121d",
+            "secondary-fixed": "#6ffbbe",
+            "on-tertiary": "#2f2e43",
+            "secondary-container": "#00a572",
+            "surface": "#12121d",
+            "tertiary-fixed": "#e2e0fc",
+            "surface-container-highest": "#343440",
+            "surface-bright": "#383845",
+            "on-secondary": "#003824",
+            "surface-container-low": "#1b1a26"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "lg": "24px",
+            "sm": "8px",
+            "gutter": "20px",
+            "md": "16px",
+            "base": "4px",
+            "xs": "4px",
+            "xl": "32px",
+            "margin-mobile": "16px",
+            "margin-desktop": "40px"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "data-mono": ["JetBrains Mono"],
+            "body-lg": ["Inter"],
+            "headline-lg": ["Inter"],
+            "display-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "label-caps": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+            "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+          }
+        },
+      },
+    }
+  </script>
+  <!-- Global configurations and common shared auth helpers -->
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+  
+  <!-- SideNavBar -->
+  <aside class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-low border-r border-outline-variant/10 flex flex-col py-xl z-50 overflow-y-auto">
+    <div class="px-md mb-xl">
+      <div class="flex items-center gap-md">
+        <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center purple-glow">
+          <span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">terminal</span>
+        </div>
+        <div>
+          <h1 class="text-headline-md font-headline-md font-black text-primary tracking-widest leading-none">NEXUS</h1>
+          <p class="text-label-caps font-label-caps text-on-surface-variant mt-1">Computational Intelligence</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 space-y-1">
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-200" href="/dashboard">
+        <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+        <span class="text-body-md font-body-md">Home</span>
+      </a>
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-200" href="/upload">
+        <span class="material-symbols-outlined" data-icon="upload_file">upload_file</span>
+        <span class="text-body-md font-body-md">Upload &amp; Clean</span>
+      </a>
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-200" href="/analysis">
+        <span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+        <span class="text-body-md font-body-md">Agent Analysis</span>
+      </a>
+      <a class="flex items-center gap-md px-md py-sm text-primary border-l-4 border-primary bg-primary-container/10 transition-all duration-200" href="/chat">
+        <span class="material-symbols-outlined" data-icon="forum">forum</span>
+        <span class="text-body-md font-body-md">Chat</span>
+      </a>
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-200" href="/history">
+        <span class="material-symbols-outlined" data-icon="history">history</span>
+        <span class="text-body-md font-body-md">History</span>
+      </a>
+    </nav>
+    <div class="px-md mt-xl">
+      <button class="w-full bg-primary-container text-on-primary-container py-md rounded-xl font-bold text-body-md flex items-center justify-center gap-sm active:scale-95 duration-200 purple-glow relative overflow-hidden" onclick="window.location.href='/analysis'">
+        <span class="icon-container flex items-center gap-sm">
+          <span class="material-symbols-outlined text-[20px]">add_circle</span>
+          <span>Run New Analysis</span>
+        </span>
+      </button>
+    </div>
+    <div class="mt-auto border-t border-outline-variant/10 pt-lg">
+      <a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-on-surface transition-all duration-200" href="/support">
+        <span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+        <span class="text-body-md font-body-md">Support</span>
+      </a>
+      <div class="mt-lg px-md flex items-center gap-md border-t border-outline-variant/10 pt-lg pb-4">
+        <div class="w-10 h-10 rounded-full bg-primary/20 text-primary border border-primary/20 flex items-center justify-center font-bold user-avatar-initials text-body-md">
+          <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+        </div>
+        <div class="overflow-hidden">
+          <p class="text-body-md font-bold truncate user-name-display"><span class="bg-outline-variant/30 rounded w-20 h-4 animate-pulse inline-block"></span></p>
+          <p class="text-label-caps text-on-surface-variant truncate user-email-display"><span class="bg-outline-variant/20 rounded w-28 h-3 animate-pulse inline-block"></span></p>
+        </div>
+      </div>
+    </div>
+  </aside>
+  
+  <!-- TopAppBar Anchor -->
+  <header class="fixed top-0 right-0 h-16 ml-[280px] w-[calc(100%-280px)] bg-surface-container flex justify-between items-center px-gutter z-40 border-b border-outline-variant/10">
+    <div class="flex items-center gap-lg flex-1">
+      <div class="relative w-full max-w-md">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+        <input class="w-full bg-surface-container-highest border-none rounded-lg pl-10 pr-4 py-2 text-body-md focus:ring-1 focus:ring-primary transition-all text-on-surface outline-none" placeholder="Search analytics, agents, or datasets..." type="text"/>
+      </div>
+    </div>
+    <div class="flex items-center gap-md">
+      <div class="flex items-center gap-sm mr-4 border-r border-outline-variant/10 pr-md cursor-pointer hover:opacity-85" onclick="window.location.href='/profile'">
+        <div class="flex flex-col items-end mr-sm">
+          <span class="text-body-sm font-bold text-on-surface leading-none user-name-display"><span class="bg-outline-variant/30 rounded w-20 h-3.5 animate-pulse inline-block"></span></span>
+          <span class="text-[10px] text-primary font-bold uppercase tracking-tighter mt-1 user-role-display"><span class="bg-outline-variant/20 rounded w-12 h-3 animate-pulse inline-block"></span></span>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-body-md purple-glow user-avatar-initials">
+          <span class="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-sm">
+        <button class="flex items-center gap-xs px-3 py-1.5 rounded-lg border border-outline-variant/20 hover:bg-error/10 hover:text-error hover:border-error/30 transition-all text-body-sm font-medium logout-btn">
+          <span class="material-symbols-outlined text-[18px]">logout</span>
+          Logout
+        </button>
+        <button class="p-2 hover:bg-surface-container-highest rounded-full transition-colors relative text-on-surface-variant">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Main Canvas -->
+  <main class="ml-[280px] mt-16 p-margin-desktop overflow-y-auto h-[calc(100vh-64px)]">
+    <!-- Header -->
+    <section class="mb-xl">
+      <h2 class="text-headline-lg font-headline-lg text-on-surface">Neural Interface Terminal</h2>
+      <p class="text-body-lg text-on-surface-variant">Converse directly with the analytical agent swarm to generate charts, explore correlations, and extract predictions.</p>
+    </section>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-lg flex-1 min-h-[500px]">
+      <!-- Left side uploader -->
+      <div class="lg:col-span-4 flex flex-col">
+        <div class="bg-surface-container-low border border-white/5 rounded-xl p-lg flex flex-col gap-lg h-full">
+          <h3 class="text-label-caps font-label-caps text-on-surface-variant">CHAT CONTEXT INGESTION</h3>
+          
+          <div class="border-2 border-dashed border-outline-variant/30 hover:border-primary/50 transition-all rounded-xl p-lg flex flex-col items-center justify-center text-center cursor-pointer relative bg-surface-container-high/10 min-h-[160px] group" id="drop-zone">
+            <input type="file" accept=".csv" class="absolute inset-0 opacity-0 cursor-pointer" id="csv-file-input"/>
+            <span class="material-symbols-outlined text-[32px] text-primary/40 group-hover:text-primary transition-colors mb-sm">upload_file</span>
+            <p class="font-bold text-body-md">Ingest Dataset Context</p>
+            <p class="text-[12px] text-on-surface-variant mt-1">Accepts CSV telemetry only</p>
+            
+            <div class="mt-md px-md py-sm bg-primary/10 rounded-lg border border-primary/20 hidden flex items-center gap-xs" id="file-badge">
+              <span class="material-symbols-outlined text-primary text-[18px]">description</span>
+              <span class="text-[12px] text-primary font-bold truncate max-w-[130px]" id="file-name-text">dataset.csv</span>
+            </div>
+          </div>
+          
+          <div class="space-y-sm bg-surface-container-high/40 p-md rounded-xl border border-white/5 hidden font-data-mono text-body-sm text-on-surface-variant" id="client-spec-container">
+            <h4 class="text-label-caps font-label-caps text-secondary mb-xs">Active Session Context</h4>
+            <p class="flex justify-between">File: <span class="text-on-surface font-bold truncate max-w-[120px]" id="spec-name">dataset.csv</span></p>
+            <p class="flex justify-between">Row dimension: <span class="text-on-surface font-bold" id="spec-rows">0</span></p>
+            <p class="flex justify-between">Col dimension: <span class="text-on-surface font-bold" id="spec-cols">0</span></p>
+          </div>
+          
+          <div id="error-alert" class="bg-error-container/20 border border-error/50 p-sm rounded-lg flex items-center gap-sm hidden">
+            <span class="material-symbols-outlined text-error text-[20px]">error</span>
+            <p class="text-[12px] leading-tight text-error font-medium" id="error-message"></p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right side chat interface -->
+      <div class="lg:col-span-8 flex flex-col bg-surface-container-low border border-white/5 rounded-xl overflow-hidden min-h-[450px]">
+        <!-- Status header -->
+        <div class="px-lg py-md border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-low">
+          <div class="flex items-center gap-sm">
+            <span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+            <p class="font-bold text-body-md text-on-surface font-data-mono">PROTOCOL STATUS: INFERENCE_ONLINE</p>
+          </div>
+          <button class="text-[12px] font-bold text-primary hover:underline" id="flush-chat-btn">Flush History</button>
+        </div>
+        
+        <!-- Conversation Timeline -->
+        <div class="flex-1 p-lg overflow-y-auto space-y-lg max-h-[340px]" id="chat-timeline">
+          <!-- Initial Assistant greeting bubble -->
+          <div class="flex flex-col max-w-[85%] mr-auto items-start">
+            <div class="p-md rounded-xl border bg-surface-container-high border-white/5 text-on-surface rounded-tl-none">
+              <p class="text-body-md leading-relaxed whitespace-pre-wrap">System online. Ingest a telemetry matrix on the left panel to initialize multi-agent contextual data chat protocols.</p>
+              <div class="border-l-4 border-secondary bg-secondary/10 p-sm rounded-r-lg text-secondary font-medium text-[13px] mt-sm">
+                <span class="font-bold">Insight:</span> Ready for structural and predictive natural language queries.
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Input panel form -->
+        <form class="p-md border-t border-outline-variant/10 bg-surface-container flex gap-md items-center" id="chat-form">
+          <input class="flex-1 bg-surface-container-low border border-outline-variant/30 rounded-xl px-lg py-md text-body-md focus:ring-1 focus:ring-primary focus:border-primary transition-all text-on-surface outline-none placeholder:text-on-surface-variant/40" id="chat-input" placeholder="Ingest CSV context first to start chat" type="text" disabled=""/>
+          <button class="bg-primary-container hover:bg-primary-container/90 text-on-primary-container p-md rounded-xl font-bold flex items-center justify-center active:scale-95 duration-200 purple-glow disabled:opacity-40 disabled:cursor-not-allowed" id="chat-send-btn" type="submit" disabled="">
+            <span class="material-symbols-outlined text-[24px]">send</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+  
+  <script>
+    const fileInput = document.getElementById("csv-file-input");
+    const dropZone = document.getElementById("drop-zone");
+    const fileBadge = document.getElementById("file-badge");
+    const fileNameText = document.getElementById("file-name-text");
+    const clientSpecContainer = document.getElementById("client-spec-container");
+    const errorAlert = document.getElementById("error-alert");
+    const errorMessage = document.getElementById("error-message");
+    
+    const chatTimeline = document.getElementById("chat-timeline");
+    const chatForm = document.getElementById("chat-form");
+    const chatInput = document.getElementById("chat-input");
+    const chatSendBtn = document.getElementById("chat-send-btn");
+    const flushBtn = document.getElementById("flush-chat-btn");
+    
+    let activeFile = null;
+    let history = [
+      {
+        role: "assistant",
+        content: JSON.stringify({
+          type: "text",
+          answer: "System online. Ingest a telemetry matrix on the left panel to initialize multi-agent contextual data chat protocols.",
+          insight: "Ready for structural and predictive natural language queries."
+        })
+      }
+    ];
+
+    fileInput.addEventListener("change", (e) => handleFileSelected(e.target.files[0]));
+    dropZone.addEventListener("dragover", (e) => e.preventDefault());
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      handleFileSelected(e.dataTransfer.files[0]);
+    });
+
+    function handleFileSelected(file) {
+      if (!file) return;
+      if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
+        errorMessage.textContent = "Invalid file protocol. Only CSV formatted payloads are accepted.";
+        errorAlert.classList.remove("hidden");
+        return;
+      }
+
+      errorAlert.classList.add("hidden");
+      activeFile = file;
+      fileNameText.textContent = file.name;
+      fileBadge.classList.remove("hidden");
+
+      // Count rows/cols for left preview spec sheet
+      const reader = new FileReader();
+      reader.onload = (el) => {
+        const text = el.target.result;
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+        const cols = lines[0]?.split(",").length || 0;
+        const rows = Math.max(0, lines.length - 1);
+        
+        document.getElementById("spec-name").textContent = file.name;
+        document.getElementById("spec-rows").textContent = rows.toLocaleString();
+        document.getElementById("spec-cols").textContent = cols;
+        clientSpecContainer.classList.remove("hidden");
+        
+        // Enable input fields
+        chatInput.disabled = false;
+        chatSendBtn.disabled = false;
+        chatInput.placeholder = "Request chart generation, correlations, summaries...";
+      };
+      reader.readAsText(file);
+    }
+
+    // Flush conversation history
+    flushBtn.addEventListener("click", () => {
+      history = [
+        {
+          role: "assistant",
+          content: JSON.stringify({
+            type: "text",
+            answer: "Conversation matrix flushed. Operational interface ready.",
+            insight: "State history cleared successfully."
+          })
+        }
+      ];
+      chatTimeline.innerHTML = `
+        <div class="flex flex-col max-w-[85%] mr-auto items-start">
+          <div class="p-md rounded-xl border bg-surface-container-high border-white/5 text-on-surface rounded-tl-none">
+            <p class="text-body-md leading-relaxed whitespace-pre-wrap">Conversation matrix flushed. Operational interface ready.</p>
+            <div class="border-l-4 border-secondary bg-secondary/10 p-sm rounded-r-lg text-secondary font-medium text-[13px] mt-sm">
+              <span class="font-bold">Insight:</span> State history cleared successfully.
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    // Submit prompt
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const prompt = chatInput.value.trim();
+      if (!prompt || !activeFile) return;
+
+      errorAlert.classList.add("hidden");
+      
+      // Append user prompt to timeline
+      chatTimeline.innerHTML += `
+        <div class="flex flex-col max-w-[85%] ml-auto items-end animate-fade-in">
+          <div class="p-md rounded-xl border bg-primary-container text-on-primary-container border-primary/30 rounded-tr-none">
+            <p class="text-body-md leading-relaxed whitespace-pre-wrap">${prompt}</p>
+          </div>
+        </div>
+      `;
+
+      chatInput.value = "";
+      
+      // Spinner loading placeholder
+      const spinnerId = "spinner-" + Date.now();
+      chatTimeline.innerHTML += `
+        <div class="flex items-center gap-sm mr-auto bg-surface-container-high border border-white/5 p-md rounded-xl rounded-tl-none animate-pulse" id="${spinnerId}">
+          <span class="material-symbols-outlined animate-spin text-primary text-[20px]">progress_activity</span>
+          <span class="text-body-sm text-on-surface-variant font-data-mono">Swarm executing inference...</span>
+        </div>
+      `;
+      chatTimeline.scrollTop = chatTimeline.scrollHeight;
+
+      // Submit to backend
+      const formData = new FormData();
+      formData.append("message", prompt);
+      
+      const payloadHistory = history.map(item => ({
+        role: item.role,
+        content: item.content
+      }));
+      formData.append("history", JSON.stringify(payloadHistory));
+      formData.append("file", activeFile);
+
+      try {
+        const res = await fetch(`${API_URL}/api/chat/message`, {
+          method: "POST",
+          headers: getAuthHeaders(null),
+          body: formData
+        });
+
+        if (!res.ok) throw new Error("Agent failed to formulate logical inference.");
+        const data = await res.json();
+        
+        // Remove spinner
+        document.getElementById(spinnerId)?.remove();
+
+        const content = data.content; // { type, answer, insight } or { type: "chart", chart_type, x, y, title, explanation }
+        
+        let bubbleHtml = "";
+        if (content.type === "chart") {
+          bubbleHtml = generateChartHtml(content);
+        } else {
+          bubbleHtml = `
+            <div class="p-md rounded-xl border bg-surface-container-high border-white/5 text-on-surface rounded-tl-none">
+              <p class="text-body-md leading-relaxed whitespace-pre-wrap">${content.answer || "Inference completed."}</p>
+              ${content.insight ? `
+                <div class="border-l-4 border-secondary bg-secondary/10 p-sm rounded-r-lg text-secondary font-medium text-[13px] mt-sm">
+                  <span class="font-bold">Insight:</span> ${content.insight}
+                </div>
+              ` : ""}
+            </div>
+          `;
+        }
+
+        // Add assistant bubble
+        chatTimeline.innerHTML += `
+          <div class="flex flex-col max-w-[85%] mr-auto items-start animate-fade-in w-full">
+            ${bubbleHtml}
+          </div>
+        `;
+        
+        // Append to history state
+        history.push({ role: "user", content: prompt });
+        history.push({ role: "assistant", content: JSON.stringify(content) });
+        
+        chatTimeline.scrollTop = chatTimeline.scrollHeight;
+
+      } catch (err) {
+        document.getElementById(spinnerId)?.remove();
+        errorMessage.textContent = err.message;
+        errorAlert.classList.remove("hidden");
+      }
+    });
+
+    // Native SVG/HTML chart generator
+    function generateChartHtml(chartContent) {
+      const { chart_type, x, y, title, explanation } = chartContent;
+      if (!Array.isArray(x) || !Array.isArray(y)) return "";
+
+      const maxVal = Math.max(...y.map(Number), 1);
+      let chartBody = "";
+
+      if (chart_type === "pie") {
+        // Render beautiful clean color segments
+        chartBody = `<div class="space-y-sm py-md">`;
+        const colors = ["bg-primary-container", "bg-secondary", "bg-tertiary", "bg-primary"];
+        const sum = y.reduce((a, b) => Number(a) + Number(b), 0);
+        
+        x.forEach((xVal, index) => {
+          const val = Number(y[index] || 0);
+          const pct = sum > 0 ? ((val / sum) * 100).toFixed(1) : "0";
+          const c = colors[index % colors.length];
+          
+          chartBody += `
+            <div class="space-y-xs">
+              <div class="flex justify-between text-label-caps text-on-surface-variant font-data-mono"><span>${xVal} (${val.toLocaleString()})</span><span>${pct}%</span></div>
+              <div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                <div class="h-full ${c} rounded-full" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        });
+        chartBody += `</div>`;
+      } else {
+        // Render beautiful horizontal/vertical progress bars inside clean styled flex box
+        chartBody = `<div class="space-y-3 py-sm">`;
+        x.slice(0, 5).forEach((xVal, index) => {
+          const val = Number(y[index] || 0);
+          const pct = ((val / maxVal) * 100).toFixed(0);
+          const c = index % 2 === 0 ? "bg-primary-container" : "bg-secondary";
+          
+          chartBody += `
+            <div class="flex items-center gap-md">
+              <span class="text-[10px] font-label-caps text-on-surface-variant w-16 text-right truncate font-data-mono">${xVal}</span>
+              <div class="flex-1 h-3 bg-surface-container-highest rounded-full overflow-hidden">
+                <div class="h-full ${c}" style="width: ${pct}%"></div>
+              </div>
+              <span class="text-[10px] font-data-mono text-on-surface-variant w-8 text-right">${val.toLocaleString()}</span>
+            </div>
+          `;
+        });
+        chartBody += `</div>`;
+      }
+
+      return `
+        <div class="bg-surface-container-high/40 border border-white/5 rounded-xl p-lg space-y-md my-sm w-full max-w-xl">
+          <div class="flex justify-between items-center border-b border-outline-variant/10 pb-sm">
+            <h4 class="text-body-md font-bold text-primary flex items-center gap-xs">
+              <span class="material-symbols-outlined text-md">analytics</span>
+              ${title || "Agent Generated Chart"}
+            </h4>
+            <span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase">${chart_type}</span>
+          </div>
+          ${chartBody}
+          ${explanation ? `
+            <p class="text-body-sm text-on-surface-variant leading-relaxed pt-xs border-t border-outline-variant/5">
+              ${explanation}
+            </p>
+          ` : ""}
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
