@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>NEXUS | Computational Intelligence Login</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      background-color: #0f0f1a;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+    }
+    .glass-glow {
+      box-shadow: 0 0 20px rgba(124, 58, 237, 0.1);
+    }
+    .data-grid-bg {
+      background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.02) 1px, transparent 0);
+      background-size: 32px 32px;
+    }
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.6; }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-low": "#1b1a26",
+            "primary-fixed": "#eaddff",
+            "surface-variant": "#343440",
+            "surface-dim": "#12121d",
+            "on-primary": "#3f008e",
+            "secondary-container": "#00a572",
+            "primary": "#d2bbff",
+            "surface-container": "#1f1e2a",
+            "secondary": "#4edea3",
+            "surface-container-high": "#292935",
+            "on-secondary-container": "#00311f",
+            "on-tertiary": "#2f2e43",
+            "surface-bright": "#383845",
+            "surface-container-lowest": "#0d0d18",
+            "error-container": "#93000a",
+            "outline": "#958da1",
+            "on-error": "#690005",
+            "on-secondary": "#003824",
+            "on-primary-container": "#ede0ff",
+            "tertiary": "#c6c4df",
+            "on-surface": "#e3e0f1",
+            "on-surface-variant": "#ccc3d8",
+            "surface-container-highest": "#343440",
+            "secondary-fixed-dim": "#4edea3",
+            "on-primary-fixed-variant": "#5a00c6",
+            "on-tertiary-fixed": "#1a1a2e",
+            "primary-container": "#7c3aed",
+            "on-secondary-fixed": "#002113",
+            "tertiary-fixed": "#e2e0fc",
+            "on-tertiary-fixed-variant": "#45455b",
+            "on-error-container": "#ffdad6",
+            "tertiary-container": "#65647c",
+            "secondary-fixed": "#6ffbbe",
+            "on-background": "#e3e0f1",
+            "tertiary-fixed-dim": "#c6c4df",
+            "on-tertiary-container": "#e5e2fe",
+            "primary-fixed-dim": "#d2bbff",
+            "on-primary-fixed": "#25005a",
+            "inverse-surface": "#e3e0f1",
+            "error": "#ffb4ab",
+            "surface": "#12121d",
+            "background": "#12121d",
+            "inverse-primary": "#732ee4",
+            "inverse-on-surface": "#302f3b",
+            "surface-tint": "#d2bbff",
+            "outline-variant": "#4a4455",
+            "on-secondary-fixed-variant": "#005236"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "sm": "8px",
+            "margin-desktop": "40px",
+            "base": "4px",
+            "xs": "4px",
+            "margin-mobile": "16px",
+            "md": "16px",
+            "lg": "24px",
+            "xl": "32px",
+            "gutter": "20px"
+          },
+          "fontFamily": {
+            "headline-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-md": ["Inter"],
+            "data-mono": ["JetBrains Mono"],
+            "display-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "label-caps": ["Inter"]
+          },
+          "fontSize": {
+            "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+            "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+            "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+          }
+        },
+      },
+    }
+  </script>
+  <!-- Global configurations -->
+  <script src="config.js"></script>
+  <script>
+    // Redirect immediately to dashboard if already logged in before parsing body to prevent FOUC/flashing
+    if (localStorage.getItem("nexus_jwt_token")) {
+      window.location.href = "/dashboard";
+    }
+  </script>
+</head>
+<body class="bg-surface-container-lowest text-on-surface min-h-screen flex items-center justify-center relative px-margin-mobile md:px-margin-desktop overflow-hidden">
+  <!-- Atmospheric Background Elements -->
+  <div class="absolute inset-0 data-grid-bg opacity-20 pointer-events-none"></div>
+  <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-container blur-[120px] rounded-full opacity-10 animate-pulse-slow"></div>
+  <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary-container blur-[120px] rounded-full opacity-10 animate-pulse-slow"></div>
+  
+  <main class="w-full max-w-[440px] z-10">
+    <!-- Brand Identity Container -->
+    <div class="flex flex-col items-center mb-xl">
+      <div class="w-16 h-16 bg-primary-container flex items-center justify-center rounded-xl mb-md glass-glow border border-white/10 group transition-all duration-500 hover:rotate-[360deg]">
+        <span class="material-symbols-outlined text-on-primary-container text-[32px]">hub</span>
+      </div>
+      <h1 class="font-headline-md text-headline-md text-primary tracking-widest font-black">NEXUS</h1>
+      <p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-[0.2em] mt-xs">Computational Intelligence</p>
+    </div>
+    
+    <!-- Login Card -->
+    <div class="bg-surface-container-low border border-white/5 rounded-xl p-lg shadow-2xl glass-glow">
+      <div class="mb-lg">
+        <h2 class="font-headline-md text-headline-md text-on-surface">System Access</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Authenticate to initiate secure multi-agent protocols.</p>
+      </div>
+      
+      <form class="space-y-lg" id="loginForm">
+        <!-- Email Field -->
+        <div class="space-y-sm">
+          <label class="font-label-caps text-label-caps text-on-surface-variant" for="email">Identity Identifier (Email)</label>
+          <div class="relative group">
+            <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] group-focus-within:text-primary transition-colors">alternate_email</span>
+            <input class="w-full bg-surface-container-high border border-outline-variant/30 rounded-lg py-sm pl-11 pr-md text-on-surface placeholder:text-on-surface-variant/40 focus:ring-1 focus:ring-primary focus:border-primary transition-all font-body-md text-body-md outline-none" id="email" name="email" placeholder="name@organization.com" required="" type="email"/>
+          </div>
+        </div>
+        
+        <!-- Password Field -->
+        <div class="space-y-sm">
+          <div class="flex justify-between items-center">
+            <label class="font-label-caps text-label-caps text-on-surface-variant" for="password">Encryption Key (Password)</label>
+            <a class="font-label-caps text-label-caps text-primary hover:text-on-primary-container transition-colors" href="#">Recover?</a>
+          </div>
+          <div class="relative group">
+            <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] group-focus-within:text-primary transition-colors">lock</span>
+            <input class="w-full bg-surface-container-high border border-outline-variant/30 rounded-lg py-sm pl-11 pr-md text-on-surface placeholder:text-on-surface-variant/40 focus:ring-1 focus:ring-primary focus:border-primary transition-all font-body-md text-body-md outline-none" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+          </div>
+        </div>
+        
+        <!-- Inline Error Alert -->
+        <div id="error-alert" class="bg-error-container/20 border border-error/50 p-sm rounded-lg flex items-center gap-sm hidden">
+          <span class="material-symbols-outlined text-error text-[20px]">error</span>
+          <p class="text-[12px] leading-tight text-error font-medium" id="error-message"></p>
+        </div>
+        
+        <!-- Remember Me & Security Notice -->
+        <div class="flex items-center gap-sm bg-surface-container-highest/30 p-sm rounded-lg border border-white/5">
+          <span class="material-symbols-outlined text-secondary text-[18px]">verified_user</span>
+          <p class="font-body-sm text-[12px] leading-tight text-on-surface-variant">
+            <span className="text-secondary font-medium">Security Protocol:</span> Session JWT tokens are securely stored in <span class="font-data-mono text-primary bg-primary/10 px-1 rounded">localStorage</span> upon successful handshake.
+          </p>
+        </div>
+        
+        <!-- Login Button -->
+        <button class="w-full bg-primary-container hover:bg-primary-container/90 text-on-primary-container font-headline-md text-body-lg py-md rounded-lg transition-all duration-300 transform active:scale-[0.98] shadow-lg shadow-primary-container/20 flex items-center justify-center gap-sm" type="submit">
+          Initialize Session
+          <span class="material-symbols-outlined text-[24px]">login</span>
+        </button>
+
+        <!-- Skip to Guest Mode Button -->
+        <button class="w-full mt-sm py-md bg-white/[0.03] hover:bg-white/[0.08] text-primary border border-primary/20 hover:border-primary/50 font-headline-md text-body-lg rounded-lg transition-all duration-300 transform active:scale-[0.98] flex items-center justify-center gap-sm" type="button" onclick="window.location.href='/dashboard'">
+          Skip to Guest Mode
+          <span class="material-symbols-outlined text-[22px]">rocket_launch</span>
+        </button>
+      </form>
+      
+      <div class="mt-xl pt-lg border-t border-white/5 text-center">
+        <p class="font-body-sm text-body-sm text-on-surface-variant">
+          New operative? <a class="text-primary font-bold hover:underline transition-all" href="/register">Register Credentials</a>
+        </p>
+      </div>
+    </div>
+    
+    <!-- System Status Decorative Footer -->
+    <footer class="mt-lg flex justify-between items-center px-sm">
+      <div class="flex items-center gap-xs">
+        <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+        <span class="font-data-mono text-[10px] text-on-surface-variant uppercase tracking-tighter">System Core v4.2.0: Online</span>
+      </div>
+      <div class="font-data-mono text-[10px] text-on-surface-variant/40">
+        LATENCY: 14ms
+      </div>
+    </footer>
+  </main>
+  
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorAlert = document.getElementById('error-alert');
+    const errorMessage = document.getElementById('error-message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      errorAlert.classList.add('hidden');
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const btn = e.target.querySelector('button');
+      
+      // Visual feedback
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `
+        <span class="material-symbols-outlined animate-spin">progress_activity</span>
+        Authenticating...
+      `;
+      btn.classList.add('opacity-80', 'cursor-wait');
+
+      try {
+        const body = new URLSearchParams();
+        body.append("username", email);
+        body.append("password", password);
+
+        const res = await fetch(`${API_URL}/api/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: body
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.detail || "Authentication failure. Unrecognized credentials.");
+        }
+
+        const data = await res.json();
+        
+        // Success: Store token & user credentials
+        localStorage.setItem("nexus_jwt_token", data.access_token);
+        localStorage.setItem("nexus_user", JSON.stringify(data.user));
+
+        btn.innerHTML = `
+          <span class="material-symbols-outlined text-secondary">check_circle</span>
+          Access Granted
+        `;
+        btn.classList.replace('bg-primary-container', 'bg-secondary-container');
+        btn.classList.replace('text-on-primary-container', 'text-on-secondary-container');
+        
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 800);
+
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        btn.classList.remove('opacity-80', 'cursor-wait');
+        
+        errorMessage.textContent = err.message;
+        errorAlert.classList.remove('hidden');
+      }
+    });
+
+    // Background subtle movement based on mouse
+    document.body.addEventListener('mousemove', (e) => {
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      const grid = document.querySelector('.data-grid-bg');
+      if (grid) grid.style.transform = `translate(${x * 10}px, ${y * 10}px)`;
+    });
+  </script>
+</body>
+</html>

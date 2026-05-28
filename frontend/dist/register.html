@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>NEXUS | Create Account</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      background-color: #0d0d18;
+      font-family: 'Inter', sans-serif;
+    }
+    .glass-panel {
+      background: rgba(26, 26, 46, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .nexus-gradient-bg {
+      background: radial-gradient(circle at 50% 50%, #1b1a26 0%, #0d0d18 100%);
+    }
+    .glow-button:hover {
+      box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-low": "#1b1a26",
+            "primary-fixed": "#eaddff",
+            "surface-variant": "#343440",
+            "surface-dim": "#12121d",
+            "on-primary": "#3f008e",
+            "secondary-container": "#00a572",
+            "primary": "#d2bbff",
+            "surface-container": "#1f1e2a",
+            "secondary": "#4edea3",
+            "surface-container-high": "#292935",
+            "on-secondary-container": "#00311f",
+            "on-tertiary": "#2f2e43",
+            "surface-bright": "#383845",
+            "surface-container-lowest": "#0d0d18",
+            "error-container": "#93000a",
+            "outline": "#958da1",
+            "on-error": "#690005",
+            "on-secondary": "#003824",
+            "on-primary-container": "#ede0ff",
+            "tertiary": "#c6c4df",
+            "on-surface": "#e3e0f1",
+            "on-surface-variant": "#ccc3d8",
+            "surface-container-highest": "#343440",
+            "secondary-fixed-dim": "#4edea3",
+            "on-primary-fixed-variant": "#5a00c6",
+            "on-tertiary-fixed": "#1a1a2e",
+            "primary-container": "#7c3aed",
+            "on-secondary-fixed": "#002113",
+            "tertiary-fixed": "#e2e0fc",
+            "on-tertiary-fixed-variant": "#45455b",
+            "on-error-container": "#ffdad6",
+            "tertiary-container": "#65647c",
+            "secondary-fixed": "#6ffbbe",
+            "on-background": "#e3e0f1",
+            "tertiary-fixed-dim": "#c6c4df",
+            "on-tertiary-container": "#e5e2fe",
+            "primary-fixed-dim": "#d2bbff",
+            "on-primary-fixed": "#25005a",
+            "inverse-surface": "#e3e0f1",
+            "error": "#ffb4ab",
+            "surface": "#12121d",
+            "background": "#12121d",
+            "inverse-primary": "#732ee4",
+            "inverse-on-surface": "#302f3b",
+            "surface-tint": "#d2bbff",
+            "outline-variant": "#4a4455",
+            "on-secondary-fixed-variant": "#005236"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "sm": "8px",
+            "margin-desktop": "40px",
+            "base": "4px",
+            "xs": "4px",
+            "margin-mobile": "16px",
+            "md": "16px",
+            "lg": "24px",
+            "xl": "32px",
+            "gutter": "20px"
+          },
+          "fontFamily": {
+            "headline-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-md": ["Inter"],
+            "data-mono": ["JetBrains Mono"],
+            "display-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "label-caps": ["Inter"]
+          },
+          "fontSize": {
+            "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+            "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+            "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+          }
+        },
+      },
+    }
+  </script>
+  <!-- Global configurations -->
+  <script src="config.js"></script>
+  <script>
+    // Redirect immediately to dashboard if already logged in before parsing body to prevent FOUC/flashing
+    if (localStorage.getItem("nexus_jwt_token")) {
+      window.location.href = "/dashboard";
+    }
+  </script>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex items-center justify-center nexus-gradient-bg p-margin-mobile md:p-margin-desktop overflow-hidden">
+  <!-- Atmospheric Background Elements -->
+  <div class="fixed inset-0 pointer-events-none">
+    <div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary-container/10 blur-[120px]"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-secondary-container/5 blur-[120px]"></div>
+  </div>
+  
+  <!-- Registration Card -->
+  <div class="relative w-full max-w-[480px] z-10 animate-fade-in">
+    <div class="glass-panel p-lg md:p-xl rounded-xl shadow-2xl">
+      <!-- Brand Identity -->
+      <div class="flex flex-col items-center mb-xl text-center">
+        <div class="w-12 h-12 bg-primary-container flex items-center justify-center rounded-lg mb-md">
+          <span class="material-symbols-outlined text-on-primary-container text-[32px]">hub</span>
+        </div>
+        <h1 class="text-display-lg font-display-lg text-primary tracking-widest mb-xs">NEXUS</h1>
+        <p class="text-body-md font-body-md text-on-surface-variant">Computational Intelligence Interface</p>
+      </div>
+      
+      <!-- Registration Form -->
+      <form class="space-y-lg" id="registrationForm">
+        <div class="space-y-md">
+          <!-- Username Field -->
+          <div class="group">
+            <label class="block text-label-caps font-label-caps text-on-surface-variant mb-xs ml-xs" for="username">Username</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors text-[20px]">person</span>
+              <input class="w-full pl-xl pr-md py-sm bg-surface-container-highest/50 border border-outline-variant/30 rounded-lg text-body-md font-body-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-on-surface placeholder:text-on-surface-variant/30" id="username" name="username" placeholder="sys_admin_01" required="" type="text"/>
+            </div>
+          </div>
+          
+          <!-- Email Field -->
+          <div class="group">
+            <label class="block text-label-caps font-label-caps text-on-surface-variant mb-xs ml-xs" for="email">System Email</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors text-[20px]">mail</span>
+              <input class="w-full pl-xl pr-md py-sm bg-surface-container-highest/50 border border-outline-variant/30 rounded-lg text-body-md font-body-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-on-surface placeholder:text-on-surface-variant/30" id="email" name="email" placeholder="operator@nexus.core" required="" type="email"/>
+            </div>
+          </div>
+          
+          <!-- Password Field -->
+          <div class="group">
+            <label class="block text-label-caps font-label-caps text-on-surface-variant mb-xs ml-xs" for="password">Access Key</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors text-[20px]">key</span>
+              <input class="w-full pl-xl pr-[48px] py-sm bg-surface-container-highest/50 border border-outline-variant/30 rounded-lg text-body-md font-body-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-on-surface placeholder:text-on-surface-variant/30" id="password" name="password" placeholder="••••••••••••" required="" type="password"/>
+              <button class="absolute right-md top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors" onclick="togglePassword()" type="button">
+                <span class="material-symbols-outlined text-[20px]" id="passwordIcon">visibility</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Inline Error Alert -->
+        <div id="error-alert" class="bg-error-container/20 border border-error/50 p-sm rounded-lg flex items-center gap-sm hidden">
+          <span class="material-symbols-outlined text-error text-[20px]">error</span>
+          <p class="text-[12px] leading-tight text-error font-medium" id="error-message"></p>
+        </div>
+        
+        <!-- Terms & Conditions -->
+        <div class="flex items-center gap-sm px-xs">
+          <input class="w-4 h-4 rounded border-outline-variant/30 bg-surface-container-highest text-primary focus:ring-primary focus:ring-offset-background" id="terms" required="" type="checkbox"/>
+          <label class="text-body-sm font-body-sm text-on-surface-variant cursor-pointer" for="terms">
+            I agree to the <a class="text-primary hover:underline" href="#">Neural Protocols</a> and <a class="text-primary hover:underline" href="#">Privacy Logic</a>.
+          </label>
+        </div>
+        
+        <!-- Submit Button -->
+        <button class="w-full py-md bg-primary-container text-on-primary-container font-headline-md text-headline-md rounded-lg glow-button active:scale-95 transition-all duration-200 flex items-center justify-center gap-sm" type="submit">
+          Initialize Account
+          <span class="material-symbols-outlined">bolt</span>
+        </button>
+
+        <!-- Skip to Guest Mode Button -->
+        <button class="w-full mt-sm py-md bg-white/[0.03] hover:bg-white/[0.08] text-primary border border-primary/20 hover:border-primary/50 font-headline-md text-headline-md rounded-lg transition-all duration-300 transform active:scale-[0.98] flex items-center justify-center gap-sm" type="button" onclick="window.location.href='/dashboard'">
+          Skip to Guest Mode
+          <span class="material-symbols-outlined">rocket_launch</span>
+        </button>
+        
+        <!-- Login Link -->
+        <p class="text-center text-body-sm font-body-sm text-on-surface-variant mt-lg">
+          Already part of the network? 
+          <a class="text-primary font-bold hover:underline transition-all" href="/">Sign In to Core</a>
+        </p>
+      </form>
+    </div>
+    
+    <!-- System Status Decorative Footer -->
+    <div class="mt-lg flex justify-between items-center text-on-surface-variant/40 px-md">
+      <div class="flex items-center gap-xs">
+        <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+        <span class="text-label-caps font-label-caps tracking-tighter uppercase">Nexus Nodes Online</span>
+      </div>
+      <div class="flex items-center gap-xs">
+        <span class="text-label-caps font-label-caps tracking-tighter uppercase">v4.0.2 Stable</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Background Grid Effect -->
+  <div class="fixed inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#d2bbff 1px, transparent 1px); background-size: 32px 32px;"></div>
+  
+  <script>
+    // Micro-interaction for password visibility
+    function togglePassword() {
+      const pwd = document.getElementById('password');
+      const icon = document.getElementById('passwordIcon');
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+        icon.innerText = 'visibility_off';
+      } else {
+        pwd.type = 'password';
+        icon.innerText = 'visibility';
+      }
+    }
+
+    const regForm = document.getElementById('registrationForm');
+    const errorAlert = document.getElementById('error-alert');
+    const errorMessage = document.getElementById('error-message');
+
+    regForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      errorAlert.classList.add('hidden');
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalContent = btn.innerHTML;
+      
+      // Loading state
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Processing...';
+      
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch(`${API_URL}/api/auth/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email, username, password })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.detail || "Credentials initiation failed.");
+        }
+        
+        btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Initialized';
+        btn.classList.replace('bg-primary-container', 'bg-secondary-container');
+        btn.classList.replace('text-on-primary-container', 'text-on-secondary-container');
+        
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1200);
+
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+        
+        errorMessage.textContent = err.message;
+        errorAlert.classList.remove('hidden');
+      }
+    });
+
+    // Background visual flair - subtle parallax follow
+    document.addEventListener('mousemove', (e) => {
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      const card = document.querySelector('.glass-panel');
+      if (card) card.style.transform = `translate(${(x - 0.5) * 10}px, ${(y - 0.5) * 10}px)`;
+    });
+  </script>
+</body>
+</html>
