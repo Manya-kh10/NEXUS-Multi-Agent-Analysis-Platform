@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import pipeline, agents, tasks, history, chat, health, ml, report, auth
 from app.middleware import LoggingMiddleware, FileSizeMiddleware
 
-# Standardized Routing Configuration (redirect_slashes=False to prevent CORS-stripping redirects)
-app = FastAPI(title="NEXUS API", version="3.0.0", redirect_slashes=False)
+# Standardized Routing Configuration (redirect_slashes=True set explicitly)
+app = FastAPI(title="NEXUS API", version="3.0.0", redirect_slashes=True)
 
 # CORS Middleware (First operation after app initialization)
 app.add_middleware(

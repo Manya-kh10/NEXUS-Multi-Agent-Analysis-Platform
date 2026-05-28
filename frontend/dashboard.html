@@ -383,7 +383,10 @@
   <script>
     async function updateHealth() {
       try {
-        const res = await fetch(`${API_URL}/api/health/`);
+        let cleanBase = API_URL;
+        if (cleanBase.endsWith("/")) cleanBase = cleanBase.slice(0, -1);
+        if (cleanBase.endsWith("/api")) cleanBase = cleanBase.slice(0, -4);
+        const res = await fetch(`${cleanBase}/api/health/`);
         if (!res.ok) throw new Error("Health status unreachable");
         
         const data = await res.json();
