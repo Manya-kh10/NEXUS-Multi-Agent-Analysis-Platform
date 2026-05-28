@@ -47,3 +47,6 @@ app.include_router(report.router, prefix="/api/report", tags=["report"])
 @app.options("/{rest_of_path:path}")
 async def preflight_handler(rest_of_path: str):
     return {}
+@app.get("/debug/routes")
+async def get_routes():
+    return [{"path": route.path, "name": route.name} for route in app.routes]
