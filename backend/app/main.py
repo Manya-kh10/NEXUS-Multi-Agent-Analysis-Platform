@@ -17,20 +17,23 @@ origins = [
     "http://127.0.0.1",
     "http://127.0.0.1:8501",
     "http://127.0.0.1:8000",
-    "https://nexus-multi-agent-intelligence-analysis-platform.vercel.app"
+    "https://nexus-multi-agent-intelligence-analysis-platform.vercel.app",
+    "https://nexus-multi-agent-analysis-platform-lsdgvx4t6.vercel.app"
 ]
 
 frontend_url = os.environ.get("FRONTEND_URL")
 if frontend_url:
     origins.append(frontend_url)
 
-if "*" not in origins:
-    origins.append("*")
+# Strip '*' to prevent FastAPI exceptions when allow_credentials=True
+if "*" in origins:
+    origins.remove("*")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_origin_regex="https://.*\\.vercel\\.app",
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
