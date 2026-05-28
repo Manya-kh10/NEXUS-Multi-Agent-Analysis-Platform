@@ -22,7 +22,7 @@ app.add_middleware(FileSizeMiddleware)
 # Root Path Handler
 @app.get("/")
 async def root_path():
-    return {"message": "NEXUS API is live", "docs_url": "/docs"}
+    return {"status": "online"}
 
 # Routers (All requests cleanly map under /api prefix)
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
