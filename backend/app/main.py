@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import pipeline, agents, tasks, history, chat, health, ml, report, auth
 from app.middleware import LoggingMiddleware, FileSizeMiddleware
 
+# Standardized Routing Configuration
 app = FastAPI(title="NEXUS API", version="3.0.0", redirect_slashes=True)
 
 # CORS Middleware (First operation after app initialization)
@@ -18,7 +19,12 @@ app.add_middleware(
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(FileSizeMiddleware)
 
-# Routers
+# Root Path Handler
+@app.get("/")
+async def root_path():
+    return {"message": "NEXUS API is live", "docs_url": "/docs"}
+
+# Routers (All requests cleanly map under /api prefix)
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(pipeline.router, prefix="/api/pipeline", tags=["pipeline"])
 app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
