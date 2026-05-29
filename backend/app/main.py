@@ -196,6 +196,49 @@ async def debug_config():
         "has_groq_key": bool(settings.groq_api_key)
     }
 
+@app.get("/debug/celery")
+async def debug_celery():
+    from app.core.celery_app import celery_app
+    try:
+        insp = celery_app.control.inspect(timeout=5.0)
+        return {
+            "ping": insp.ping(),
+            "active": insp.active(),
+            "reserved": insp.reserved(),
+            "registered": insp.registered(),
+            "stats": insp.stats()
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/debug/analyses")
+async def debug_analyses():
+    from app.database import AsyncSessionLocal
+    from app.models.analysis import Analysis
+    from sqlalchemy import select
+    try:
+        async with AsyncSessionLocal() as db:
+            stmt = select(Analysis).order_by(Analysis.created_at.desc()).limit(15)
+            res = await db.execute(stmt)
+            analyses = res.scalars().all()
+            return [
+                {
+                    "id": a.id,
+                    "task_id": a.task_id,
+                    "filename": a.filename,
+                    "status": a.status,
+                    "original_rows": a.original_rows,
+                    "original_cols": a.original_cols,
+                    "cached": a.cached,
+                    "created_at": str(a.created_at),
+                    "updated_at": str(a.updated_at)
+                }
+                for a in analyses
+            ]
+    except Exception as e:
+        return {"error": str(e)}
+
+
 # Step 3.5: Root GET and HEAD for Render Health Check
 @app.get("/")
 async def root():
