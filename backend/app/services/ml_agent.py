@@ -16,7 +16,9 @@ warnings.filterwarnings("ignore")
 
 llm = ChatGroq(
     api_key=settings.groq_api_key,
-    model_name="llama-3.3-70b-versatile"
+    model_name="llama-3.3-70b-versatile",
+    timeout=25.0,
+    max_retries=2
 )
 
 def detect_task_type(df: pd.DataFrame, target_col: str) -> str:
