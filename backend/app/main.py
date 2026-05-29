@@ -172,6 +172,30 @@ async def options_handler(full_path: str):
 async def debug_routes():
     return {"routes": [r.path for r in app.routes]}
 
+@app.get("/debug/config")
+async def debug_config():
+    from app.config import settings
+    
+    redis_masked = settings.redis_url
+    if "@" in redis_masked:
+        parts = redis_masked.split("@", 1)
+        scheme_and_user = parts[0].split(":", 2)
+        redis_masked = f"{scheme_and_user[0]}://****:****@{parts[1]}"
+        
+    db_masked = settings.database_url
+    if "@" in db_masked:
+        parts = db_masked.split("@", 1)
+        scheme_and_user = parts[0].split(":", 2)
+        db_masked = f"{scheme_and_user[0]}://****:****@{parts[1]}"
+        
+    return {
+        "redis_url_masked": redis_masked,
+        "database_url_masked": db_masked,
+        "supabase_url": settings.supabase_url,
+        "supabase_bucket": settings.supabase_bucket,
+        "has_groq_key": bool(settings.groq_api_key)
+    }
+
 # Step 3.5: Root GET and HEAD for Render Health Check
 @app.get("/")
 async def root():
