@@ -35,6 +35,7 @@ async def lifespan(app: FastAPI):
         
     if not settings.redis_url:
         logger.error("CRITICAL CONFIGURATION ERROR: REDIS_URL is missing!")
+        raise RuntimeError("CRITICAL CONFIGURATION ERROR: REDIS_URL is missing!")
         
     # Check Supabase keys
     from app.services.storage_service import get_supabase_key, is_supabase_enabled
@@ -75,6 +76,7 @@ async def lifespan(app: FastAPI):
         logger.info("Redis server connection successfully validated.")
     except Exception as e:
         logger.exception(f"CRITICAL: Redis server connection failed: {e}")
+        raise RuntimeError(f"CRITICAL: Redis server connection failed: {e}")
 
     # 5. Initialize Storage buckets/directories
     logger.info("Initializing storage systems...")
@@ -235,6 +237,30 @@ async def health():
             "groq": groq_status
         }
     }
+
+@app.get("/health/redis")
+async def health_redis():
+    import redis
+    try:
+        r = redis.from_url(settings.redis_url, socket_timeout=3)
+        r.ping()
+        return {"status": "healthy", "redis": "online"}
+    except Exception as e:
+        logger.error(f"Redis health check failed: {e}")
+        raise HTTPException(status_code=503, detail=f"Redis connection failed: {str(e)}")
+
+@app.get("/health/celery")
+async def health_celery():
+    from app.core.celery_app import celery_app
+    try:
+        insp = celery_app.control.inspect(timeout=1.0)
+        ping_res = insp.ping()
+        if not ping_res:
+            raise HTTPException(status_code=503, detail="No active Celery workers found.")
+        return {"status": "healthy", "workers": ping_res}
+    except Exception as e:
+        logger.error(f"Celery health check failed: {e}")
+        raise HTTPException(status_code=503, detail=f"Celery inspection failed: {str(e)}")
 
 # Step 5: Include all routers AFTER middleware
 from app.routers import pipeline, agents, tasks, history, chat, health as health_router, ml, report, auth

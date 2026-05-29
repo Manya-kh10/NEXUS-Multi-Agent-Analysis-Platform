@@ -1,19 +1,2 @@
-from celery import Celery
-from app.config import settings
-
-celery_app = Celery(
-    "nexus",
-    broker=settings.redis_url,
-    backend=settings.redis_url,
-    include=["app.tasks"]
-)
-
-celery_app.conf.update(
-    task_serializer="json",
-    result_serializer="json",
-    accept_content=["json"],
-    task_track_started=True,
-    task_acks_late=True,
-    worker_prefetch_multiplier=1,
-    result_expires=3600,
-)
+# Clean redirect to prevent any breaking changes to existing entrypoints/runtimes
+from app.core.celery_app import celery_app

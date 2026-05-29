@@ -14,6 +14,9 @@ import pandas as pd
 import io
 import uuid
 import logging
+import celery.exceptions
+import kombu.exceptions
+import redis
 
 logger = logging.getLogger("nexus.tasks_router")
 router = APIRouter()
@@ -100,7 +103,14 @@ async def start_analysis(
             )
 
         # Queue Celery analysis task
-        task = run_analysis_task.delay(task_param, filename)
+        try:
+            task = run_analysis_task.delay(task_param, filename)
+        except (celery.exceptions.OperationalError, kombu.exceptions.OperationalError, redis.RedisError) as e:
+            logger.error(f"Failed to queue Celery analysis task: {e}")
+            raise HTTPException(
+                status_code=503,
+                detail="Task queue service is temporarily unavailable."
+            )
 
         # Create analysis run record
         analysis = await create_analysis(db, AnalysisCreate(

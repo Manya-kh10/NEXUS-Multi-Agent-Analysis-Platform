@@ -1,4 +1,4 @@
-from app.celery_app import celery_app
+from app.core.celery_app import celery_app
 from app.services.agents import run_eda_agent, run_stats_agent, run_insight_agent
 from app.services.cache import get_cached_result, set_cached_result
 import pandas as pd
