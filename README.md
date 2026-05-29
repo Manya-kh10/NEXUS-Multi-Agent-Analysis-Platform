@@ -11,10 +11,15 @@ NEXUS is a **full-stack AI-powered data analysis platform** that automates the c
 Upload any CSV dataset and NEXUS automatically:
 
 ✅ Cleans and preprocesses the data
+
 ✅ Handles missing values, outliers, duplicates, and datatype corrections
+
 ✅ Runs multiple AI agents for deep analysis and insight generation
+
 ✅ Trains ML models automatically
+
 ✅ Generates downloadable PDF reports
+
 ✅ Lets users chat with their dataset using natural language
 
 ---
