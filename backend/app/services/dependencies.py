@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.services.auth_service import decode_token, get_user_by_email
 from app.models.user import User
+from typing import Optional
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
@@ -51,7 +52,6 @@ async def get_current_user_optional(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ) -> Optional[User]:
-    from typing import Optional
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         return None
