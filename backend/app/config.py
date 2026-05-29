@@ -15,3 +15,10 @@ class Settings(BaseSettings):
         extra = "ignore"
 
 settings = Settings()
+
+# Post-processing: Secure Redis SSL bypass for Render cloud deployments
+if settings.redis_url.startswith("rediss://") and "ssl_cert_reqs" not in settings.redis_url:
+    if "?" in settings.redis_url:
+        settings.redis_url += "&ssl_cert_reqs=none"
+    else:
+        settings.redis_url += "?ssl_cert_reqs=none"

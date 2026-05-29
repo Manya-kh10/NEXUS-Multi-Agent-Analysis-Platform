@@ -111,6 +111,15 @@ async def start_analysis(
                 status_code=503,
                 detail="Task queue service is temporarily unavailable."
             )
+        except Exception as e:
+            err_msg = str(e)
+            if "celery" in err_msg.lower() or "redis" in err_msg.lower() or "connection" in err_msg.lower() or "retry" in err_msg.lower():
+                logger.error(f"Celery result store or broker connection error: {e}")
+                raise HTTPException(
+                    status_code=503,
+                    detail="Task queue service is temporarily unavailable. Please verify task queue service connectivity."
+                )
+            raise e
 
         # Create analysis run record
         analysis = await create_analysis(db, AnalysisCreate(
