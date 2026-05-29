@@ -25,8 +25,11 @@ ALLOWED_ORIGINS += [
     "http://localhost:5173", 
     "http://localhost:3000",
     "https://nexus-multi-agent-analysis-platform.vercel.app",
-    "https://nexus-multi-agent-analysis-platform-5nddujzap.vercel.app"
+    "https://nexus-multi-agent-analysis-platform-5nddujzap.vercel.app",
+    "https://nexus-multi-agent-analysis-platform-9qtdz56i.vercel.app",
+    "https://nexus-multi-agent-analysis-git-3e127b-manyas-projects-ee68bfc4.vercel.app",
 ]
+
 
 app.add_middleware(
     CORSMiddleware,

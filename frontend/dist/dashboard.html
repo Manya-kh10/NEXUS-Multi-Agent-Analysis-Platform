@@ -383,7 +383,7 @@
   <script>
     async function updateHealth() {
       try {
-        const res = await fetch('https://nexus-backend-render.onrender.com/api/health');
+        const res = await fetch(`${API_URL}/api/health`);
         if (!res.ok) throw new Error("Health status unreachable");
         
         const data = await res.json();
