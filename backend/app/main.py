@@ -11,6 +11,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://nexus-multi-agent-analysis-platform-5nddujzap.vercel.app",
+        "https://nexus-multi-agent-analysis-platform.vercel.app",  # Production custom domain
         "http://localhost:5173",
         "http://localhost:3000",
         "http://localhost:8000",
@@ -43,10 +44,7 @@ app.include_router(health.router, prefix="/api/health", tags=["health"])
 app.include_router(ml.router, prefix="/api/ml", tags=["ml"])
 app.include_router(report.router, prefix="/api/report", tags=["report"])
 
-# Explicit OPTIONS Handler for CORS Preflight Requests
-@app.options("/{rest_of_path:path}")
-async def preflight_handler(rest_of_path: str):
-    return {}
+# Temporary route mapping audit route
 @app.get("/debug/routes")
 async def get_routes():
     return [route.path for route in app.routes]
