@@ -5,9 +5,10 @@ from app.database import get_db
 from app.services.analysis_service import create_analysis, update_analysis, get_analysis_by_task_id
 from app.schemas.analysis import AnalysisCreate, AnalysisUpdate
 from app.services.cache import clear_cache
-from app.services.dependencies import get_current_active_user
+from app.services.dependencies import get_current_active_user, get_current_user_optional
 from app.models.user import User
 from celery.result import AsyncResult
+from typing import Optional
 import pandas as pd
 import io
 
@@ -17,7 +18,7 @@ router = APIRouter()
 async def start_analysis(
     file: UploadFile = File(...), 
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     contents = await file.read()
     csv_data = contents.decode("utf-8")
@@ -31,7 +32,7 @@ async def start_analysis(
         original_rows=len(df),
         original_cols=len(df.columns),
         task_id=task.id,
-        user_id=current_user.id
+        user_id=current_user.id if current_user else None
     ))
 
     return {

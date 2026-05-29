@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
@@ -46,3 +46,19 @@ async def get_admin_user(
             detail="Admin access required"
         )
     return current_user
+
+async def get_current_user_optional(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+) -> Optional[User]:
+    from typing import Optional
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    
+    token = auth_header.split(" ")[1]
+    token_data = decode_token(token)
+    if token_data is None:
+        return None
+        
+    return await get_user_by_email(db, token_data.email)

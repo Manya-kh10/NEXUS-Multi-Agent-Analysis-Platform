@@ -159,12 +159,17 @@ window.fetch = async function (...args) {
   try {
     const response = await originalFetch.apply(this, args);
     if (response.status === 401) {
+      const hasToken = localStorage.getItem("nexus_jwt_token") !== null;
       localStorage.removeItem("nexus_jwt_token");
       localStorage.removeItem("nexus_user");
       
       const isLoginPage = window.location.pathname === "/" || window.location.pathname === "/index.html" || window.location.pathname.endsWith("/register") || window.location.pathname.endsWith("/register.html");
       if (!isLoginPage) {
-        alert("Session Expired: Your security token has expired or is invalid. Please sign in again.");
+        if (hasToken) {
+          alert("Session Expired: Your security token has expired or is invalid. Please sign in again.");
+        } else {
+          alert("Access Denied: This operation requires authentication. Please sign in to create an operative session.");
+        }
         window.location.href = "/";
       }
     }
