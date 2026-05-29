@@ -121,7 +121,7 @@ async def clean_dataset(
 async def download_cleaned(
     dataset_id: str,
     request: Request,
-    version: str = Query("cleaned", regex="^(cleaned|original)$"),
+    version: str = Query("cleaned", pattern="^(cleaned|original)$"),
     db: AsyncSession = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional)
 ):

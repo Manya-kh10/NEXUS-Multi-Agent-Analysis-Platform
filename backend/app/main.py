@@ -14,6 +14,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
 import os
 from contextlib import asynccontextmanager
+from app.config import settings
 from app.services.storage_service import initialize_storage
 from alembic.config import Config
 from alembic import command
