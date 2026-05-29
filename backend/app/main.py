@@ -55,7 +55,59 @@ async def debug_routes():
 @app.get("/health")
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "service": "NEXUS"}
+    from app.database import engine
+    from app.config import settings
+    import redis
+    import httpx
+    
+    postgres_status = "error"
+    redis_status = "error"
+    groq_status = "error"
+    
+    # Check PostgreSQL
+    try:
+        async with engine.connect() as conn:
+            await conn.execute(__import__('sqlalchemy').text("SELECT 1"))
+        postgres_status = "ok"
+    except Exception:
+        pass
+
+    # Check Redis
+    try:
+        r = redis.from_url(settings.redis_url)
+        r.ping()
+        redis_status = "ok"
+    except Exception:
+        pass
+
+    # Check Groq
+    try:
+        async with httpx.AsyncClient(timeout=3) as client:
+            res = await client.get("https://api.groq.com")
+            groq_status = "ok" if res.status_code < 500 else "degraded"
+    except Exception:
+        pass
+        
+    status_overall = "healthy" if (postgres_status == "ok" and redis_status == "ok") else "degraded"
+    
+    return {
+        "status": status_overall,
+        "service": "NEXUS",
+        "postgres": {
+            "status": "healthy" if postgres_status == "ok" else "offline"
+        },
+        "redis": {
+            "status": "healthy" if redis_status == "ok" else "offline"
+        },
+        "groq": {
+            "status": "healthy" if groq_status == "ok" else "offline"
+        },
+        "components": {
+            "postgres": postgres_status,
+            "redis": redis_status,
+            "groq": groq_status
+        }
+    }
 
 # Step 5: Include all routers AFTER middleware
 from app.routers import pipeline, agents, tasks, history, chat, health as health_router, ml, report, auth

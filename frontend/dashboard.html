@@ -387,38 +387,43 @@
         if (!res.ok) throw new Error("Health status unreachable");
         
         const data = await res.json();
-        const comp = data.components;
+        // Defensive parsing support for both standard and legacy response shapes
+        const pgOk = data?.postgres?.status === "healthy" || data?.components?.postgres === "ok";
+        const rOk = data?.redis?.status === "healthy" || data?.components?.redis === "ok";
+        const gOk = data?.groq?.status === "healthy" || data?.components?.groq === "ok";
         
         // Update PostgreSQL Telemetry
         const pgDot = document.getElementById("pg-dot");
         const pgText = document.getElementById("pg-text");
         const pgStatus = document.getElementById("pg-status");
         const pgBar = document.getElementById("pg-bar");
-        if (comp.postgres === "ok") {
-          pgStatus.className = "flex items-center gap-1 text-[10px] text-secondary font-bold uppercase";
-          pgDot.className = "w-1.5 h-1.5 bg-secondary rounded-full animate-pulse";
-          pgText.textContent = "Connected";
-          pgBar.className = "h-full bg-secondary transition-all";
+        if (pgOk) {
+          if (pgStatus) pgStatus.className = "flex items-center gap-1 text-[10px] text-secondary font-bold uppercase";
+          if (pgDot) pgDot.className = "w-1.5 h-1.5 bg-secondary rounded-full animate-pulse";
+          if (pgText) pgText.textContent = "Connected";
+          if (pgBar) pgBar.className = "h-full bg-secondary transition-all";
         } else {
-          pgStatus.className = "flex items-center gap-1 text-[10px] text-error font-bold uppercase";
-          pgDot.className = "w-1.5 h-1.5 bg-error rounded-full animate-ping";
-          pgText.textContent = "Offline";
-          pgBar.className = "h-full bg-error transition-all";
-          pgBar.style.width = "15%";
+          if (pgStatus) pgStatus.className = "flex items-center gap-1 text-[10px] text-error font-bold uppercase";
+          if (pgDot) pgDot.className = "w-1.5 h-1.5 bg-error rounded-full animate-ping";
+          if (pgText) pgText.textContent = "Offline";
+          if (pgBar) {
+            pgBar.className = "h-full bg-error transition-all";
+            pgBar.style.width = "15%";
+          }
         }
 
         // Update Redis Telemetry
         const rDot = document.getElementById("redis-dot");
         const rText = document.getElementById("redis-text");
         const rStatus = document.getElementById("redis-status");
-        if (comp.redis === "ok") {
-          rStatus.className = "flex items-center gap-1 text-[10px] text-secondary font-bold uppercase";
-          rDot.className = "w-1.5 h-1.5 bg-secondary rounded-full";
-          rText.textContent = "Healthy";
+        if (rOk) {
+          if (rStatus) rStatus.className = "flex items-center gap-1 text-[10px] text-secondary font-bold uppercase";
+          if (rDot) rDot.className = "w-1.5 h-1.5 bg-secondary rounded-full";
+          if (rText) rText.textContent = "Healthy";
         } else {
-          rStatus.className = "flex items-center gap-1 text-[10px] text-error font-bold uppercase";
-          rDot.className = "w-1.5 h-1.5 bg-error rounded-full animate-ping";
-          rText.textContent = "Error";
+          if (rStatus) rStatus.className = "flex items-center gap-1 text-[10px] text-error font-bold uppercase";
+          if (rDot) rDot.className = "w-1.5 h-1.5 bg-error rounded-full animate-ping";
+          if (rText) rText.textContent = "Error";
         }
 
         // Update Groq Telemetry
@@ -426,17 +431,19 @@
         const gText = document.getElementById("groq-text");
         const gStatus = document.getElementById("groq-status");
         const gBar = document.getElementById("groq-bar");
-        if (comp.groq === "ok") {
-          gStatus.className = "flex items-center gap-1 text-[10px] text-secondary font-bold uppercase";
-          gDot.className = "w-1.5 h-1.5 bg-secondary rounded-full";
-          gText.textContent = "Active";
-          gBar.className = "h-full gradient-progress transition-all";
+        if (gOk) {
+          if (gStatus) gStatus.className = "flex items-center gap-1 text-[10px] text-secondary font-bold uppercase";
+          if (gDot) gDot.className = "w-1.5 h-1.5 bg-secondary rounded-full";
+          if (gText) gText.textContent = "Active";
+          if (gBar) gBar.className = "h-full gradient-progress transition-all";
         } else {
-          gStatus.className = "flex items-center gap-1 text-[10px] text-error font-bold uppercase";
-          gDot.className = "w-1.5 h-1.5 bg-error rounded-full animate-ping";
-          gText.textContent = "Offline";
-          gBar.className = "h-full bg-error transition-all";
-          gBar.style.width = "10%";
+          if (gStatus) gStatus.className = "flex items-center gap-1 text-[10px] text-error font-bold uppercase";
+          if (gDot) gDot.className = "w-1.5 h-1.5 bg-error rounded-full animate-ping";
+          if (gText) gText.textContent = "Offline";
+          if (gBar) {
+            gBar.className = "h-full bg-error transition-all";
+            gBar.style.width = "10%";
+          }
         }
       } catch (err) {
         console.error("System health status lookup failure:", err);
