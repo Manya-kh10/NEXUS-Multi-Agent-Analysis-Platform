@@ -7,9 +7,11 @@
 # the 404, not CORS.
 # ==============================================================================
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
 import os
 from contextlib import asynccontextmanager
 from app.services.storage_service import initialize_storage
@@ -21,17 +23,67 @@ logger = logging.getLogger("nexus.main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Programmatic database migrations
+    logger.info("=== NEXUS STARTUP INITIALIZATION & VALIDATION ===")
+    
+    # 1. Environment & Config Validation
+    logger.info("Verifying environment configurations...")
+    if not settings.database_url:
+        logger.error("CRITICAL CONFIGURATION ERROR: DATABASE_URL is missing!")
+    elif not ("postgresql" in settings.database_url or "postgres" in settings.database_url):
+        logger.warning(f"DATABASE_URL does not specify standard postgresql driver: {settings.database_url}")
+        
+    if not settings.redis_url:
+        logger.error("CRITICAL CONFIGURATION ERROR: REDIS_URL is missing!")
+        
+    # Check Supabase keys
+    from app.services.storage_service import get_supabase_key, is_supabase_enabled
+    supabase_key = get_supabase_key()
+    if not settings.supabase_url:
+        logger.warning("SUPABASE_URL is missing. Falling back to persistent local volume storage.")
+    elif not supabase_key:
+        logger.warning("Supabase authentication keys (anon/service-role) are missing. Falling back to local storage.")
+    else:
+        logger.info(f"Supabase credentials configured. Bucket: {settings.supabase_bucket}")
+
+    # 2. Programmatic database migrations
     logger.info("Running pending database migrations...")
     try:
         alembic_cfg = Config("alembic.ini")
         command.upgrade(alembic_cfg, "head")
         logger.info("Database migrations upgraded to HEAD.")
     except Exception as e:
-        logger.error(f"Failed to run database migrations: {e}")
+        logger.exception(f"Failed to run database migrations: {e}")
 
-    # Initialize storage directories/buckets
-    await initialize_storage()
+    # 3. PostgreSQL Connectivity Validation
+    logger.info("Verifying PostgreSQL database connection...")
+    try:
+        from app.database import engine
+        from sqlalchemy import text
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        logger.info("PostgreSQL database connection successfully validated.")
+    except Exception as e:
+        logger.exception(f"CRITICAL: PostgreSQL database connection failed: {e}")
+
+    # 4. Redis Connectivity Validation
+    logger.info("Verifying Redis connection...")
+    try:
+        import redis
+        r = redis.from_url(settings.redis_url, socket_timeout=3)
+        r.ping()
+        logger.info("Redis server connection successfully validated.")
+    except Exception as e:
+        logger.exception(f"CRITICAL: Redis server connection failed: {e}")
+
+    # 5. Initialize Storage buckets/directories
+    logger.info("Initializing storage systems...")
+    try:
+        await initialize_storage()
+        logger.info("Storage initialization completed.")
+    except Exception as e:
+        logger.exception(f"CRITICAL: Storage systems initialization failed: {e}")
+
+    logger.info("=== NEXUS SYSTEM READY ===")
     yield
 
 app = FastAPI(
@@ -40,6 +92,48 @@ app = FastAPI(
     redirect_slashes=False,
     lifespan=lifespan
 )
+
+def make_cors_error_response(request: Request, content: dict, status_code: int) -> JSONResponse:
+    response = JSONResponse(content=jsonable_encoder(content), status_code=status_code)
+    
+    # Standardize CORS response injection
+    origin = request.headers.get("origin")
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+    else:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        
+    return response
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception(f"Unhandled backend exception occurred: {exc}")
+    return make_cors_error_response(
+        request=request,
+        content={"detail": "Internal Server Error", "message": str(exc)},
+        status_code=500
+    )
+
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request: Request, exc: HTTPException):
+    logger.error(f"HTTPException raised: {exc.status_code} - {exc.detail}")
+    return make_cors_error_response(
+        request=request,
+        content={"detail": exc.detail},
+        status_code=exc.status_code
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError):
+    logger.error(f"RequestValidationError raised: {exc.errors()}")
+    return make_cors_error_response(
+        request=request,
+        content={"detail": "Validation error", "errors": exc.errors()},
+        status_code=422
+    )
 
 # Step 1: CORS first, before everything else
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")

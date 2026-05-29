@@ -657,13 +657,10 @@
     document.getElementById("send-analysis-btn").addEventListener("click", () => {
       if (!activeFile) return;
       
-      // Store reference file meta and dataset_id in sessionStorage to carry to analysis page
+      // Store reference dataset_id in sessionStorage to carry to analysis page
       if (cleaningResult && cleaningResult.dataset_id) {
         sessionStorage.setItem("nexus_preloaded_dataset_id", cleaningResult.dataset_id);
       }
-      sessionStorage.setItem("nexus_preloaded_filename", cleaningResult ? cleaningResult.filename : activeFile.name);
-      sessionStorage.setItem("nexus_preloaded_file_rows", cleaningResult ? cleaningResult.cleaned_shape.rows : document.getElementById("spec-rows").textContent);
-      sessionStorage.setItem("nexus_preloaded_file_cols", cleaningResult ? cleaningResult.cleaned_shape.cols : document.getElementById("spec-cols").textContent);
       
       window.location.href = "/analysis";
     });

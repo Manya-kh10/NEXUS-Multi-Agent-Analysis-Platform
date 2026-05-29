@@ -125,42 +125,30 @@ async def download_cleaned(
     db: AsyncSession = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional)
 ):
-    guest_session_id = request.headers.get("x-guest-session-id") or request.query_params.get("guest_session_id")
-    user_id = current_user.id if current_user else None
-    
-    # 1. Fetch metadata and verify user/session ownership
-    dataset = await dataset_service.get_dataset_for_user_or_session(
-        db=db,
-        dataset_id=dataset_id,
-        user_id=user_id,
-        session_id=guest_session_id
-    )
-    
-    if not dataset:
-        # Check backward compatibility fallback: if dataset_id matches an actual local file, download it
-        # (This preserves compatibility with older files in standard local folders during transition)
-        local_dir = "/app/data/cleaned"
-        local_path = os.path.join(local_dir, dataset_id)
-        if os.path.exists(local_path):
-            with open(local_path, "rb") as f:
-                data_bytes = f.read()
-            return StreamingResponse(
-                io.BytesIO(data_bytes),
-                media_type="text/csv",
-                headers={"Content-Disposition": f"attachment; filename=cleaned_{dataset_id}"}
-            )
-        raise HTTPException(status_code=404, detail="Dataset not found or access unauthorized.")
-        
-    # 2. Get storage URL based on requested version
-    storage_url = dataset.cleaned_storage_url if version == "cleaned" else dataset.storage_url
-    filename = dataset.cleaned_filename if version == "cleaned" else dataset.original_filename
-    
-    if not storage_url:
-        # If cleaned version is requested but doesn't exist, fall back to original
-        storage_url = dataset.storage_url
-        filename = dataset.original_filename
-        
     try:
+        guest_session_id = request.headers.get("x-guest-session-id") or request.query_params.get("guest_session_id")
+        user_id = current_user.id if current_user else None
+        
+        # 1. Fetch metadata and verify user/session ownership
+        dataset = await dataset_service.get_dataset_for_user_or_session(
+            db=db,
+            dataset_id=dataset_id,
+            user_id=user_id,
+            session_id=guest_session_id
+        )
+        
+        if not dataset:
+            raise HTTPException(status_code=404, detail="Dataset not found or operative session unauthorized.")
+            
+        # 2. Get storage URL based on requested version
+        storage_url = dataset.cleaned_storage_url if version == "cleaned" else dataset.storage_url
+        filename = dataset.cleaned_filename if version == "cleaned" else dataset.original_filename
+        
+        if not storage_url:
+            # If cleaned version is requested but doesn't exist, fall back to original
+            storage_url = dataset.storage_url
+            filename = dataset.original_filename
+            
         # 3. Stream from Supabase/Local storage to client
         file_bytes = await storage_service.download_file(storage_url)
         return StreamingResponse(
@@ -168,9 +156,44 @@ async def download_cleaned(
             media_type="text/csv",
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
+    except HTTPException as exc:
+        raise exc
     except Exception as exc:
-        logger.error(f"Download storage error for dataset {dataset_id}: {exc}")
-        raise HTTPException(status_code=500, detail="Failed to fetch dataset from storage.")
+        logger.exception(f"Unhandled exception in download_cleaned endpoint for dataset {dataset_id}: {exc}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error during dataset download."
+        )
+
+@router.get("/datasets/{dataset_id}")
+async def get_dataset_metadata(
+    dataset_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    guest_session_id = request.headers.get("x-guest-session-id") or request.query_params.get("guest_session_id")
+    user_id = current_user.id if current_user else None
+    
+    dataset = await dataset_service.get_dataset_for_user_or_session(
+        db=db,
+        dataset_id=dataset_id,
+        user_id=user_id,
+        session_id=guest_session_id
+    )
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset not found or operative session unauthorized.")
+        
+    return {
+        "dataset_id": dataset.dataset_id,
+        "name": dataset.name,
+        "original_filename": dataset.original_filename,
+        "cleaned_filename": dataset.cleaned_filename,
+        "status": dataset.status,
+        "row_count": dataset.row_count,
+        "column_count": dataset.column_count,
+        "created_at": dataset.created_at
+    }
 
 @router.get("/datasets")
 async def list_user_datasets(

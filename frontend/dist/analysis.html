@@ -765,45 +765,28 @@
     // Reset pre-loaded variables from sessionStorage
     window.addEventListener("load", async () => {
       const preloadedId = sessionStorage.getItem("nexus_preloaded_dataset_id");
-      const preloadedFn = sessionStorage.getItem("nexus_preloaded_filename");
       
       if (preloadedId) {
         try {
           activeDatasetId = preloadedId;
           activeFile = null;
           
-          document.getElementById("active-filename").textContent = preloadedFn || "Cleaned Dataset";
-          const rows = sessionStorage.getItem("nexus_preloaded_file_rows") || "0";
-          const cols = sessionStorage.getItem("nexus_preloaded_file_cols") || "0";
-          document.getElementById("active-filesize").textContent = `Purified payload: ${Number(rows).toLocaleString()} rows × ${cols} columns · Ready.`;
+          // Fetch verified metadata dynamically from backend
+          const res = await fetch(`${API_URL}/api/pipeline/datasets/${preloadedId}`, {
+            headers: getAuthHeaders()
+          });
+          if (!res.ok) throw new Error("Could not retrieve dataset metadata.");
+          
+          const meta = await res.json();
+          document.getElementById("active-filename").textContent = meta.original_filename || meta.name || "Cleaned Dataset";
+          const rows = meta.row_count || 0;
+          const cols = meta.column_count || 0;
+          document.getElementById("active-filesize").textContent = `Purified payload: ${Number(rows).toLocaleString()} rows × ${cols} columns · Persistent ID ready.`;
           
           ingestContainer.classList.add("hidden");
           triggerContainer.classList.remove("hidden");
         } catch (e) {
           console.error("Failed to configure preloaded dataset ID:", e);
-          ingestContainer.classList.remove("hidden");
-        }
-      } else if (preloadedFn) {
-        // Backward compatibility fallback download
-        try {
-          const res = await fetch(`${API_URL}/api/pipeline/download/${preloadedFn}`, {
-            headers: getAuthHeaders()
-          });
-          if (!res.ok) throw new Error("Could not cache preloaded file.");
-          
-          const blob = await res.blob();
-          activeFile = new File([blob], preloadedFn, { type: "text/csv" });
-          activeDatasetId = null;
-          
-          document.getElementById("active-filename").textContent = preloadedFn;
-          const rows = sessionStorage.getItem("nexus_preloaded_file_rows") || "0";
-          const cols = sessionStorage.getItem("nexus_preloaded_file_cols") || "0";
-          document.getElementById("active-filesize").textContent = `Purified payload: ${Number(rows).toLocaleString()} rows × ${cols} columns.`;
-          
-          ingestContainer.classList.add("hidden");
-          triggerContainer.classList.remove("hidden");
-        } catch (e) {
-          console.error(e);
           ingestContainer.classList.remove("hidden");
         }
       } else {
@@ -885,7 +868,18 @@
         });
 
         if (!res.ok) {
-          throw new Error("Swarm analyze request handshake failed.");
+          let errMsg = "Swarm analyze request handshake failed.";
+          try {
+            const errData = await res.json();
+            if (errData && errData.detail) {
+              errMsg = `Analysis Error: ${errData.detail}`;
+            } else if (errData && errData.message) {
+              errMsg = `Analysis Error: ${errData.message}`;
+            }
+          } catch (e) {
+            errMsg = `Analysis Error: HTTP ${res.status} ${res.statusText}`;
+          }
+          throw new Error(errMsg);
         }
 
         const data = await res.json();
@@ -2586,16 +2580,18 @@
     }
 
     // PDF Download
-    downloadPdfBtn.addEventListener("click", async () => {
-      if (!activeDatasetId && !activeFile) return;
+    const downloadPdfBtn = document.getElementById("download-pdf-btn");
+    if (downloadPdfBtn) {
+      downloadPdfBtn.addEventListener("click", async () => {
+        if (!activeDatasetId && !activeFile) return;
 
-      const pdfIcon = document.getElementById("pdf-icon");
-      const pdfText = document.getElementById("pdf-text");
-      
-      pdfIcon.className = "material-symbols-outlined text-lg animate-spin";
-      pdfIcon.textContent = "progress_activity";
-      pdfText.textContent = "Generating PDF...";
-      downloadPdfBtn.disabled = true;
+        const pdfIcon = document.getElementById("pdf-icon");
+        const pdfText = document.getElementById("pdf-text");
+        
+        pdfIcon.className = "material-symbols-outlined text-lg animate-spin";
+        pdfIcon.textContent = "progress_activity";
+        pdfText.textContent = "Generating PDF...";
+        downloadPdfBtn.disabled = true;
 
       const formData = new FormData();
       if (activeDatasetId) {
@@ -2635,6 +2631,7 @@
         downloadPdfBtn.disabled = false;
       }
     });
+  }
   </script>
 </body>
 </html>

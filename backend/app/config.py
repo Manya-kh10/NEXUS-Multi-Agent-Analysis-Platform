@@ -6,8 +6,9 @@ class Settings(BaseSettings):
     secret_key: str
     groq_api_key: str
     supabase_url: str = ""
-    supabase_key: str = ""
-    supabase_bucket: str = "nexus-datasets"
+    supabase_anon_key: str = ""
+    supabase_service_role_key: str = ""
+    supabase_bucket: str = "datasets"
 
     class Config:
         env_file = ".env"

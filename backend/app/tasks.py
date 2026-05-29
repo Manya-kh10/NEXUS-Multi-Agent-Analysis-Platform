@@ -101,9 +101,9 @@ def run_analysis_task(self, csv_data_or_id: str, filename: str):
         }
 
     except Exception as exc:
-        logger.error(f"Task execution failure: {exc}", exc_info=True)
+        logger.exception(f"Task execution failure for file {filename}: {exc}")
         self.update_state(
             state="FAILURE",
-            meta={"status": f"Error: {str(exc)}", "progress": 0}
+            meta={"status": "Swarm analysis task failed.", "progress": 0}
         )
         raise self.retry(exc=exc, countdown=5)
