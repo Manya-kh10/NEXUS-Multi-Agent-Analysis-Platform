@@ -34,8 +34,7 @@ async def lifespan(app: FastAPI):
         logger.warning(f"DATABASE_URL does not specify standard postgresql driver: {settings.database_url}")
         
     if not settings.redis_url:
-        logger.error("CRITICAL CONFIGURATION ERROR: REDIS_URL is missing!")
-        raise RuntimeError("CRITICAL CONFIGURATION ERROR: REDIS_URL is missing!")
+        logger.warning("REDIS_URL environment variable is missing! Caching and task queues will be disabled.")
         
     # Check Supabase keys
     from app.services.storage_service import get_supabase_key, is_supabase_enabled
@@ -48,13 +47,13 @@ async def lifespan(app: FastAPI):
         logger.info(f"Supabase credentials configured. Bucket: {settings.supabase_bucket}")
 
     # 2. Programmatic database migrations
-    logger.info("Running pending database migrations...")
     try:
+        logger.info("Running pending database migrations...")
         alembic_cfg = Config("alembic.ini")
         command.upgrade(alembic_cfg, "head")
-        logger.info("Database migrations upgraded to HEAD.")
+        logger.info("Database migrations completed.")
     except Exception as e:
-        logger.exception(f"Failed to run database migrations: {e}")
+        logger.error(f"Migration failed: {e}", exc_info=True)
 
     # 3. PostgreSQL Connectivity Validation
     logger.info("Verifying PostgreSQL database connection...")
@@ -65,18 +64,20 @@ async def lifespan(app: FastAPI):
             await conn.execute(text("SELECT 1"))
         logger.info("PostgreSQL database connection successfully validated.")
     except Exception as e:
-        logger.exception(f"CRITICAL: PostgreSQL database connection failed: {e}")
+        logger.warning(f"PostgreSQL database connection failed: {e}")
 
     # 4. Redis Connectivity Validation
-    logger.info("Verifying Redis connection...")
-    try:
-        import redis
-        r = redis.from_url(settings.redis_url, socket_timeout=3)
-        r.ping()
-        logger.info("Redis server connection successfully validated.")
-    except Exception as e:
-        logger.exception(f"CRITICAL: Redis server connection failed: {e}")
-        raise RuntimeError(f"CRITICAL: Redis server connection failed: {e}")
+    if settings.redis_url:
+        logger.info("Verifying Redis connection...")
+        try:
+            import redis
+            r = redis.from_url(settings.redis_url, socket_timeout=3)
+            r.ping()
+            logger.info("Redis server connection successfully validated.")
+        except Exception as e:
+            logger.warning(f"Redis server connection failed: {e}. Asynchronous queueing and cache features may be degraded.")
+    else:
+        logger.warning("Skipping Redis connection validation because REDIS_URL is missing.")
 
     # 5. Initialize Storage buckets/directories
     logger.info("Initializing storage systems...")
@@ -84,7 +85,7 @@ async def lifespan(app: FastAPI):
         await initialize_storage()
         logger.info("Storage initialization completed.")
     except Exception as e:
-        logger.exception(f"CRITICAL: Storage systems initialization failed: {e}")
+        logger.warning(f"Storage systems initialization failed: {e}. Falling back to default filesystem paths.")
 
     logger.info("=== NEXUS SYSTEM READY ===")
     yield
@@ -174,7 +175,7 @@ async def debug_routes():
 # Step 3.5: Root GET and HEAD for Render Health Check
 @app.get("/")
 async def root():
-    return {"status": "NEXUS backend running"}
+    return {"status": "ok"}
 
 @app.head("/")
 async def root_head():
