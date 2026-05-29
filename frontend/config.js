@@ -1,10 +1,13 @@
 // Global configuration variables for NEXUS
 const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.port === "8501";
 
-// Production Render API endpoint resolver using Vite env or localStorage fallback
-let rawApiUrl = localStorage.getItem("NEXUS_API_URL") || import.meta.env.VITE_API_URL || (isLocal ? "http://localhost:8000" : "https://nexus-multi-agent-analysis-platform.onrender.com");
+// Resolve production API URL: uses injected placeholder from build process, or production Render fallback
+const buildTimeApiUrl = "__VITE_API_URL__";
+const fallbackApiUrl = buildTimeApiUrl.startsWith("__") ? "https://nexus-multi-agent-analysis-platform.onrender.com" : buildTimeApiUrl;
 
-// Sanitize URL: Remove trailing slashes and /api prefix if present to prevent double-prefixing (e.g., /api/api/...)
+let rawApiUrl = localStorage.getItem("NEXUS_API_URL") || (isLocal ? "http://localhost:8000" : fallbackApiUrl);
+
+// Sanitize URL: Remove trailing slashes and /api prefix if present to prevent double-prefixing
 if (rawApiUrl.endsWith("/")) {
   rawApiUrl = rawApiUrl.slice(0, -1);
 }
