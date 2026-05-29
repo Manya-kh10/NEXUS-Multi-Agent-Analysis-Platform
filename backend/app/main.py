@@ -51,6 +51,15 @@ async def options_handler(full_path: str):
 async def debug_routes():
     return {"routes": [r.path for r in app.routes]}
 
+# Step 3.5: Root GET and HEAD for Render Health Check
+@app.get("/")
+async def root():
+    return {"status": "NEXUS backend running"}
+
+@app.head("/")
+async def root_head():
+    return {}
+
 # Step 4: Health check at root level (no prefix)
 @app.get("/health")
 @app.get("/api/health")
