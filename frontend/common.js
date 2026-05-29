@@ -132,12 +132,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// Guest Session ID generation/retrieval
+let guestSessionId = localStorage.getItem("nexus_guest_session_id");
+if (!guestSessionId) {
+  guestSessionId = "guest_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  localStorage.setItem("nexus_guest_session_id", guestSessionId);
+}
+
 // Helper to construct authorization headers for fetch requests
 function getAuthHeaders(contentType = "application/json") {
   const token = localStorage.getItem("nexus_jwt_token");
   const headers = {};
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
+  }
+  const gsId = localStorage.getItem("nexus_guest_session_id");
+  if (gsId) {
+    headers["X-Guest-Session-ID"] = gsId;
   }
   if (contentType) {
     headers["Content-Type"] = contentType;

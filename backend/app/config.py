@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     redis_url: str
     secret_key: str
     groq_api_key: str
+    supabase_url: str = ""
+    supabase_key: str = ""
+    supabase_bucket: str = "nexus-datasets"
 
     class Config:
         env_file = ".env"

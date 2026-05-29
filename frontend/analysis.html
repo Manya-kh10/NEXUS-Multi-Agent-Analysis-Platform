@@ -748,6 +748,7 @@
     const mlContent = document.getElementById("ml-content");
     
     let activeFile = null;
+    let activeDatasetId = null;
     let pollInterval = null;
     let countdownInterval = null;
     let estimatedSeconds = 15;
@@ -763,8 +764,27 @@
 
     // Reset pre-loaded variables from sessionStorage
     window.addEventListener("load", async () => {
+      const preloadedId = sessionStorage.getItem("nexus_preloaded_dataset_id");
       const preloadedFn = sessionStorage.getItem("nexus_preloaded_filename");
-      if (preloadedFn) {
+      
+      if (preloadedId) {
+        try {
+          activeDatasetId = preloadedId;
+          activeFile = null;
+          
+          document.getElementById("active-filename").textContent = preloadedFn || "Cleaned Dataset";
+          const rows = sessionStorage.getItem("nexus_preloaded_file_rows") || "0";
+          const cols = sessionStorage.getItem("nexus_preloaded_file_cols") || "0";
+          document.getElementById("active-filesize").textContent = `Purified payload: ${Number(rows).toLocaleString()} rows × ${cols} columns · Ready.`;
+          
+          ingestContainer.classList.add("hidden");
+          triggerContainer.classList.remove("hidden");
+        } catch (e) {
+          console.error("Failed to configure preloaded dataset ID:", e);
+          ingestContainer.classList.remove("hidden");
+        }
+      } else if (preloadedFn) {
+        // Backward compatibility fallback download
         try {
           const res = await fetch(`${API_URL}/api/pipeline/download/${preloadedFn}`, {
             headers: getAuthHeaders()
@@ -773,6 +793,7 @@
           
           const blob = await res.blob();
           activeFile = new File([blob], preloadedFn, { type: "text/csv" });
+          activeDatasetId = null;
           
           document.getElementById("active-filename").textContent = preloadedFn;
           const rows = sessionStorage.getItem("nexus_preloaded_file_rows") || "0";
@@ -803,6 +824,7 @@
 
       errorAlert.classList.add("hidden");
       activeFile = file;
+      activeDatasetId = null;
       document.getElementById("active-filename").textContent = file.name;
       document.getElementById("active-filesize").textContent = `Raw payload: ${(file.size / 1024).toFixed(1)} KB · Ready.`;
       
@@ -813,7 +835,7 @@
 
     // Swarm start
     startSwarmBtn.addEventListener("click", async () => {
-      if (!activeFile) return;
+      if (!activeDatasetId && !activeFile) return;
 
       errorAlert.classList.add("hidden");
       workspaceContainer.classList.add("hidden");
@@ -824,7 +846,7 @@
       activeChartConfigs = {};
 
       // Estimate countdown timer based on size (1 sec per 5000 rows, min 8s)
-      const fileSize = activeFile.size || 50000;
+      const fileSize = activeFile ? activeFile.size : 50000;
       estimatedSeconds = Math.max(8, Math.ceil(fileSize / 1024 / 80) + 5);
 
       // Show progress polling card
@@ -849,7 +871,11 @@
       startCountdownTimer();
 
       const formData = new FormData();
-      formData.append("file", activeFile);
+      if (activeDatasetId) {
+        formData.append("dataset_id", activeDatasetId);
+      } else {
+        formData.append("file", activeFile);
+      }
 
       try {
         const res = await fetch(`${API_URL}/api/tasks/analyze`, {
@@ -2560,9 +2586,8 @@
     }
 
     // PDF Download
-    const downloadPdfBtn = document.getElementById("download-pdf-btn");
     downloadPdfBtn.addEventListener("click", async () => {
-      if (!activeFile) return;
+      if (!activeDatasetId && !activeFile) return;
 
       const pdfIcon = document.getElementById("pdf-icon");
       const pdfText = document.getElementById("pdf-text");
@@ -2573,7 +2598,11 @@
       downloadPdfBtn.disabled = true;
 
       const formData = new FormData();
-      formData.append("file", activeFile);
+      if (activeDatasetId) {
+        formData.append("dataset_id", activeDatasetId);
+      } else {
+        formData.append("file", activeFile);
+      }
       formData.append("include_ml", "true");
 
       try {
@@ -2589,7 +2618,8 @@
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `NEXUS_Report_${activeFile.name.replace(".csv", "")}.pdf`;
+        const baseName = activeFile ? activeFile.name : (sessionStorage.getItem("nexus_preloaded_filename") || "dataset.csv");
+        a.download = `NEXUS_Report_${baseName.replace(".csv", "")}.pdf`;
         document.body.appendChild(a);
         a.click();
         a.remove();

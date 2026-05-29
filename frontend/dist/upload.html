@@ -649,14 +649,18 @@
 
     // Action links
     document.getElementById("download-csv-btn").addEventListener("click", () => {
-      if (!cleaningResult || !cleaningResult.filename) return;
-      window.open(`${API_URL}/api/pipeline/download/${cleaningResult.filename}`, "_blank");
+      if (!cleaningResult || !cleaningResult.dataset_id) return;
+      const gsId = localStorage.getItem("nexus_guest_session_id") || "";
+      window.open(`${API_URL}/api/pipeline/download/${cleaningResult.dataset_id}?version=cleaned&guest_session_id=${gsId}`, "_blank");
     });
 
     document.getElementById("send-analysis-btn").addEventListener("click", () => {
       if (!activeFile) return;
       
-      // Store reference file meta in sessionStorage to carry to analysis page
+      // Store reference file meta and dataset_id in sessionStorage to carry to analysis page
+      if (cleaningResult && cleaningResult.dataset_id) {
+        sessionStorage.setItem("nexus_preloaded_dataset_id", cleaningResult.dataset_id);
+      }
       sessionStorage.setItem("nexus_preloaded_filename", cleaningResult ? cleaningResult.filename : activeFile.name);
       sessionStorage.setItem("nexus_preloaded_file_rows", cleaningResult ? cleaningResult.cleaned_shape.rows : document.getElementById("spec-rows").textContent);
       sessionStorage.setItem("nexus_preloaded_file_cols", cleaningResult ? cleaningResult.cleaned_shape.cols : document.getElementById("spec-cols").textContent);

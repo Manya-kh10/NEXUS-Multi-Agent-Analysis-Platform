@@ -11,11 +11,34 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import os
+from contextlib import asynccontextmanager
+from app.services.storage_service import initialize_storage
+from alembic.config import Config
+from alembic import command
+import logging
+
+logger = logging.getLogger("nexus.main")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Programmatic database migrations
+    logger.info("Running pending database migrations...")
+    try:
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
+        logger.info("Database migrations upgraded to HEAD.")
+    except Exception as e:
+        logger.error(f"Failed to run database migrations: {e}")
+
+    # Initialize storage directories/buckets
+    await initialize_storage()
+    yield
 
 app = FastAPI(
     title="NEXUS API",
     version="3.0.0",
-    redirect_slashes=False
+    redirect_slashes=False,
+    lifespan=lifespan
 )
 
 # Step 1: CORS first, before everything else
