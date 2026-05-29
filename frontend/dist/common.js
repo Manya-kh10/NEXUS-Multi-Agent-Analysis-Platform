@@ -152,3 +152,24 @@ function handleLogout() {
   sessionStorage.removeItem("nexus_toast_shown");
   window.location.href = "/";
 }
+
+// Global fetch interceptor to catch 401 Unauthorized and redirect to login gracefully
+const originalFetch = window.fetch;
+window.fetch = async function (...args) {
+  try {
+    const response = await originalFetch.apply(this, args);
+    if (response.status === 401) {
+      localStorage.removeItem("nexus_jwt_token");
+      localStorage.removeItem("nexus_user");
+      
+      const isLoginPage = window.location.pathname === "/" || window.location.pathname === "/index.html" || window.location.pathname.endsWith("/register") || window.location.pathname.endsWith("/register.html");
+      if (!isLoginPage) {
+        alert("Session Expired: Your security token has expired or is invalid. Please sign in again.");
+        window.location.href = "/";
+      }
+    }
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
