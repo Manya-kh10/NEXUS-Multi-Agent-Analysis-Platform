@@ -46,9 +46,9 @@ def _run_cleaning_pipeline(contents: bytes) -> dict:
 async def clean_dataset(
     request: Request,
     file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional)
+    db: AsyncSession = Depends(get_db)
 ):
+    current_user = await get_current_user_optional(request, db)
     # Parse guest session ID header
     guest_session_id = request.headers.get("x-guest-session-id")
     user_id = current_user.id if current_user else None
@@ -122,9 +122,9 @@ async def download_cleaned(
     dataset_id: str,
     request: Request,
     version: str = Query("cleaned", pattern="^(cleaned|original)$"),
-    db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional)
+    db: AsyncSession = Depends(get_db)
 ):
+    current_user = await get_current_user_optional(request, db)
     try:
         guest_session_id = request.headers.get("x-guest-session-id") or request.query_params.get("guest_session_id")
         user_id = current_user.id if current_user else None
@@ -169,9 +169,9 @@ async def download_cleaned(
 async def get_dataset_metadata(
     dataset_id: str,
     request: Request,
-    db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional)
+    db: AsyncSession = Depends(get_db)
 ):
+    current_user = await get_current_user_optional(request, db)
     guest_session_id = request.headers.get("x-guest-session-id") or request.query_params.get("guest_session_id")
     user_id = current_user.id if current_user else None
     
@@ -199,9 +199,9 @@ async def get_dataset_metadata(
 async def list_user_datasets(
     request: Request,
     limit: int = Query(50, ge=1, le=100),
-    db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional)
+    db: AsyncSession = Depends(get_db)
 ):
+    current_user = await get_current_user_optional(request, db)
     """Lists all datasets owned by the logged-in user or the active guest session."""
     guest_session_id = request.headers.get("x-guest-session-id")
     user_id = current_user.id if current_user else None

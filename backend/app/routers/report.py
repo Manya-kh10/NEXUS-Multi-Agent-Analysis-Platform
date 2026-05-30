@@ -22,9 +22,9 @@ async def generate_report(
     dataset_id: Optional[str] = Form(default=None),
     file: Optional[UploadFile] = File(default=None),
     include_ml: bool = Form(default=True),
-    db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional)
+    db: AsyncSession = Depends(get_db)
 ):
+    current_user = await get_current_user_optional(request, db)
     guest_session_id = request.headers.get("x-guest-session-id")
     user_id = current_user.id if current_user else None
     
