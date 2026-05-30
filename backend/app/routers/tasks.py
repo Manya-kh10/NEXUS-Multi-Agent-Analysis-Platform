@@ -147,51 +147,86 @@ async def start_analysis(
 
 @router.get("/status/{task_id}")
 async def get_task_status(task_id: str, db: AsyncSession = Depends(get_db)):
-    task = AsyncResult(task_id)
-
-    if task.state == "PENDING":
-        return {"task_id": task_id, "status": "pending", "progress": 0}
-
-    elif task.state == "PROGRESS":
-        meta = task.info or {}
-        return {
-            "task_id": task_id,
-            "status": "progress",
-            "progress": meta.get("progress", 0),
-            "message": meta.get("status", ""),
-            "eda": meta.get("eda"),
-            "stats": meta.get("stats"),
-            "insights": meta.get("insights")
-        }
-
-    elif task.state == "SUCCESS":
-        result = task.result
-
-        await update_analysis(db, task_id, AnalysisUpdate(
-            status="complete",
-            cached=result.get("cached", False),
-            eda_result=result.get("eda"),
-            stats_result=result.get("stats"),
-            insight_result=result.get("insights"),
-        ))
-
-        return {
-            "task_id": task_id,
-            "status": "complete",
-            "progress": 100,
-            "result": result
-        }
-
-    elif task.state == "FAILURE":
+    try:
+        task = AsyncResult(task_id)
+        state = task.state
+    except Exception as e:
+        logger.error(f"Failed to fetch Celery task state for {task_id}: {e}")
         await update_analysis(db, task_id, AnalysisUpdate(status="failed"))
         return {
             "task_id": task_id,
             "status": "failed",
             "progress": 0,
-            "error": str(task.info)
+            "error": "Task execution failed or results state was corrupted."
         }
 
-    return {"task_id": task_id, "status": task.state}
+    try:
+        if state == "PENDING":
+            return {"task_id": task_id, "status": "pending", "progress": 0}
+
+        elif state == "PROGRESS":
+            meta = task.info or {}
+            return {
+                "task_id": task_id,
+                "status": "progress",
+                "progress": meta.get("progress", 0),
+                "message": meta.get("status", ""),
+                "eda": meta.get("eda"),
+                "stats": meta.get("stats"),
+                "insights": meta.get("insights")
+            }
+
+        elif state == "SUCCESS":
+            result = task.result
+
+            if isinstance(result, dict) and result.get("status") == "failed":
+                await update_analysis(db, task_id, AnalysisUpdate(status="failed"))
+                return {
+                    "task_id": task_id,
+                    "status": "failed",
+                    "progress": 0,
+                    "error": result.get("error", "Task execution failed.")
+                }
+
+            await update_analysis(db, task_id, AnalysisUpdate(
+                status="complete",
+                cached=result.get("cached", False),
+                eda_result=result.get("eda"),
+                stats_result=result.get("stats"),
+                insight_result=result.get("insights"),
+            ))
+
+            return {
+                "task_id": task_id,
+                "status": "complete",
+                "progress": 100,
+                "result": result
+            }
+
+        elif state == "FAILURE":
+            await update_analysis(db, task_id, AnalysisUpdate(status="failed"))
+            error_msg = "Celery worker task execution failure."
+            try:
+                error_msg = str(task.info)
+            except Exception:
+                pass
+            return {
+                "task_id": task_id,
+                "status": "failed",
+                "progress": 0,
+                "error": error_msg
+            }
+
+        return {"task_id": task_id, "status": state}
+
+    except Exception as e:
+        logger.exception(f"Exception raised in get_task_status endpoint for {task_id}: {e}")
+        return {
+            "task_id": task_id,
+            "status": "failed",
+            "progress": 0,
+            "error": f"Failed to retrieve task status details: {str(e)}"
+        }
 
 @router.delete("/cancel/{task_id}")
 async def cancel_task(task_id: str, db: AsyncSession = Depends(get_db)):
