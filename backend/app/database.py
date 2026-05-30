@@ -23,7 +23,9 @@ if "sslmode=" in db_url:
 # Disable prepared statement caching for Supabase Connection Pooler (PgBouncer/Supavisor) compatibility
 connect_args["statement_cache_size"] = 0
 
-engine = create_async_engine(db_url, echo=True, connect_args=connect_args)
+from sqlalchemy.pool import NullPool
+
+engine = create_async_engine(db_url, echo=True, connect_args=connect_args, poolclass=NullPool)
 AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 Base = declarative_base()
 
