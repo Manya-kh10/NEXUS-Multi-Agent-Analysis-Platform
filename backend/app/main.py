@@ -231,10 +231,24 @@ async def debug_analyses():
                     "original_cols": a.original_cols,
                     "cached": a.cached,
                     "created_at": str(a.created_at),
-                    "updated_at": str(a.updated_at)
+                    "completed_at": str(a.completed_at)
                 }
                 for a in analyses
             ]
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/debug/celery-log")
+async def debug_celery_log():
+    log_path = "/app/celery_startup.log"
+    if not os.path.exists(log_path):
+        log_path = "celery_startup.log"
+    if not os.path.exists(log_path):
+        return {"error": f"Log file not found at {os.path.abspath(log_path)} or /app/celery_startup.log."}
+    try:
+        with open(log_path, "r") as f:
+            lines = f.readlines()
+        return {"log_path": os.path.abspath(log_path), "lines": lines[-150:]}
     except Exception as e:
         return {"error": str(e)}
 
