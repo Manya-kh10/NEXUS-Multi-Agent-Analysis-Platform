@@ -252,6 +252,27 @@ async def debug_celery_log():
     except Exception as e:
         return {"error": str(e)}
 
+@app.get("/debug/task-state/{task_id}")
+async def debug_task_state(task_id: str):
+    from celery.result import AsyncResult
+    task = AsyncResult(task_id)
+    try:
+        state = task.state
+        info_type = str(type(task.info))
+        info_str = str(task.info)
+        result_type = str(type(task.result))
+        result_str = str(task.result)
+        return {
+            "task_id": task_id,
+            "state": state,
+            "info_type": info_type,
+            "info_str": info_str,
+            "result_type": result_type,
+            "result_str": result_str
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
 
 # Step 3.5: Root GET and HEAD for Render Health Check
 @app.get("/")
