@@ -125,11 +125,145 @@ document.addEventListener("DOMContentLoaded", () => {
           setTimeout(() => toast.remove(), 500);
         }, 5000);
       }
-    } else {
-      // Remove welcome toast from layout immediately if already shown in session
-      document.getElementById("welcome-toast")?.remove();
     }
   }
+
+  // --- RESPONSIVE SIDEBAR COLLAPSE & MOBILE SLIDEOUT ---
+  // Injected responsive layout styling for premium look & animations
+  const style = document.createElement("style");
+  style.innerHTML = `
+    /* Transitions for smooth premium feel */
+    aside {
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    header, main, footer {
+      transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    @media (max-width: 1024px) {
+      aside {
+        transform: translateX(-100%);
+        box-shadow: none;
+      }
+      aside.sidebar-open {
+        transform: translateX(0);
+        box-shadow: 10px 0 35px rgba(0, 0, 0, 0.6);
+      }
+      header {
+        margin-left: 0 !important;
+        width: 100% !important;
+      }
+      main {
+        margin-left: 0 !important;
+        padding: 16px !important;
+        width: 100% !important;
+      }
+      footer {
+        left: 0 !important;
+        width: 100% !important;
+      }
+    }
+    
+    /* Collapsed Sidebar on Desktop */
+    body.sidebar-collapsed aside {
+      transform: translateX(-100%);
+    }
+    body.sidebar-collapsed header {
+      margin-left: 0 !important;
+      width: 100% !important;
+    }
+    body.sidebar-collapsed main {
+      margin-left: 0 !important;
+      width: 100% !important;
+    }
+    body.sidebar-collapsed footer {
+      left: 0 !important;
+      width: 100% !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // 1. Mobile Logo/Menu Toggle Button on Top Header (with a beautiful mini Nexus logo)
+  const header = document.querySelector("header");
+  if (header) {
+    if (!document.getElementById("mobile-menu-btn")) {
+      const menuBtn = document.createElement("button");
+      menuBtn.id = "mobile-menu-btn";
+      menuBtn.className = "lg:hidden flex items-center gap-2 p-1 hover:bg-surface-container-highest rounded-lg transition-all mr-md text-on-surface cursor-pointer border border-outline-variant/10 bg-surface-container-low px-2 py-1 purple-glow active:scale-95 duration-150";
+      menuBtn.innerHTML = `
+        <div class="w-7 h-7 rounded bg-primary-container flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">terminal</span>
+        </div>
+        <span class="text-body-sm font-black text-primary tracking-wider leading-none">NEXUS</span>
+      `;
+      
+      header.insertBefore(menuBtn, header.firstChild);
+      
+      menuBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const aside = document.querySelector("aside");
+        aside?.classList.toggle("sidebar-open");
+      });
+    }
+
+    // 2. Desktop Toggle Button next to search bar
+    if (!document.getElementById("desktop-sidebar-btn")) {
+      const deskBtn = document.createElement("button");
+      deskBtn.id = "desktop-sidebar-btn";
+      deskBtn.className = "hidden lg:flex p-2 hover:bg-surface-container-highest rounded-full transition-colors text-on-surface mr-sm items-center justify-center cursor-pointer";
+      deskBtn.innerHTML = `<span class="material-symbols-outlined text-[20px]">menu_open</span>`;
+      
+      const searchWrapper = header.querySelector(".relative");
+      if (searchWrapper) {
+        searchWrapper.parentNode.insertBefore(deskBtn, searchWrapper);
+      } else {
+        header.insertBefore(deskBtn, header.firstChild);
+      }
+      
+      deskBtn.addEventListener("click", () => {
+        document.body.classList.toggle("sidebar-collapsed");
+        const isCollapsed = document.body.classList.contains("sidebar-collapsed");
+        deskBtn.innerHTML = `<span class="material-symbols-outlined text-[20px]">${isCollapsed ? 'menu' : 'menu_open'}</span>`;
+      });
+    }
+  }
+
+  // 3. Make Left Sidebar Logo a toggle close button!
+  const logoContainer = document.querySelector("aside div.px-md.mb-xl div.flex.items-center");
+  if (logoContainer) {
+    logoContainer.classList.add("cursor-pointer", "hover:opacity-85", "transition-opacity", "relative", "pr-8");
+    
+    // Add close button/chevron next to the logo
+    const toggleIcon = document.createElement("span");
+    toggleIcon.className = "material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] hover:text-primary transition-colors";
+    toggleIcon.textContent = "chevron_left";
+    logoContainer.appendChild(toggleIcon);
+    
+    logoContainer.addEventListener("click", () => {
+      const aside = document.querySelector("aside");
+      if (window.innerWidth <= 1024) {
+        aside?.classList.remove("sidebar-open");
+      } else {
+        document.body.classList.toggle("sidebar-collapsed");
+        const deskBtn = document.getElementById("desktop-sidebar-btn");
+        if (deskBtn) {
+          const isCollapsed = document.body.classList.contains("sidebar-collapsed");
+          deskBtn.innerHTML = `<span class="material-symbols-outlined text-[20px]">${isCollapsed ? 'menu' : 'menu_open'}</span>`;
+        }
+      }
+    });
+  }
+
+  // 4. Click outside to dismiss sidebar on mobile
+  document.addEventListener("click", (e) => {
+    const aside = document.querySelector("aside");
+    const mobileBtn = document.getElementById("mobile-menu-btn");
+    if (aside && aside.classList.contains("sidebar-open")) {
+      if (!aside.contains(e.target) && (!mobileBtn || !mobileBtn.contains(e.target))) {
+        aside.classList.remove("sidebar-open");
+      }
+    }
+  });
 });
 
 // Guest Session ID generation/retrieval
