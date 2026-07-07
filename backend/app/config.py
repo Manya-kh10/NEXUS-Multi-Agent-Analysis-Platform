@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     supabase_anon_key: str = ""
     supabase_service_role_key: str = ""
     supabase_bucket: str = "datasets"
+    
 
     class Config:
         env_file = ".env"
@@ -21,4 +22,4 @@ if settings.redis_url.startswith("rediss://") and "ssl_cert_reqs" not in setting
     if "?" in settings.redis_url:
         settings.redis_url += "&ssl_cert_reqs=none"
     else:
-        settings.redis_url += "?ssl_cert_reqs=none"
+        settings.redis_url += "?ssl_cert_reqs=none"
